@@ -149,6 +149,7 @@
     font-family: var(--font-mono), monospace;
     background-color: #080808;
     color: #f4f4f5;
+    @apply font-mono;
   }
   body {
     @apply bg-background text-foreground;
@@ -156,8 +157,6 @@
     color: #f4f4f5;
     overflow-x: hidden;
   }
-  html {
-    @apply font-mono;
 }
 
 /* Cyber Technical Grid & Patterns */
