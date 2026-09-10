@@ -1,22 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { sound } from "@/lib/sound";
 import { 
-  SpeakerHigh, 
-  SpeakerSimpleSlash, 
   LockOpen, 
-  Terminal,
-  PaperPlaneTilt,
-  List
+  PaperPlaneTilt, 
+  List, 
+  Play 
 } from "@phosphor-icons/react";
+import { MasterKeyHud } from "@/components/master-key-hud";
 
 interface NavbarProps {
-  onOpenIdeasModal: (roundNum?: number) => void;
+  onOpenIdeasModal?: (roundNum?: number) => void;
+  onStartGame?: () => void;
+  activeTeamName?: string;
+  activeTeamTimer?: string;
+  activeTeamMasterCode?: string | null;
+  activeTeamLevel?: number;
 }
 
-export function Navbar({ onOpenIdeasModal }: NavbarProps) {
-  const [isMuted, setIsMuted] = useState(false);
+export function Navbar({
+  onOpenIdeasModal,
+  onStartGame,
+  activeTeamName,
+  activeTeamTimer,
+  activeTeamMasterCode,
+  activeTeamLevel,
+}: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -28,11 +37,16 @@ export function Navbar({ onOpenIdeasModal }: NavbarProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleToggleAudio = () => {
-    const nextMuted = sound.toggleMute();
-    setIsMuted(nextMuted);
-    if (!nextMuted) {
-      sound.playClick(1000);
+  const handleStartGame = () => {
+    if (onStartGame) {
+      onStartGame();
+      return;
+    }
+    const element = document.getElementById("rounds");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    } else {
+      window.location.href = "#rounds";
     }
   };
 
@@ -54,7 +68,6 @@ export function Navbar({ onOpenIdeasModal }: NavbarProps) {
         {/* Brand */}
         <a
           href="#"
-          onClick={() => sound.playClick(800)}
           className="flex items-center gap-3 group select-none"
         >
           <div className="w-8 h-8 bg-[#ff5500] flex items-center justify-center text-black font-black text-xs group-hover:bg-white transition-colors">
@@ -81,7 +94,6 @@ export function Navbar({ onOpenIdeasModal }: NavbarProps) {
             <a
               key={link.href}
               href={link.href}
-              onClick={() => sound.playClick(750)}
               className="text-neutral-400 hover:text-white hover:border-b-2 hover:border-[#ff5500] py-1 tracking-wider transition-colors"
             >
               {link.label}
@@ -91,50 +103,43 @@ export function Navbar({ onOpenIdeasModal }: NavbarProps) {
 
         {/* Action Controls */}
         <div className="flex items-center gap-3">
-          {/* Status Beacon */}
-          <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-neutral-900/90 border border-neutral-800 text-[11px] font-mono text-neutral-300">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff5500] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff5500]"></span>
-            </span>
-            <span className="text-[10px] tracking-wider uppercase text-neutral-400">
-              SYS: <span className="text-white font-bold">ARMED</span>
-            </span>
-          </div>
+          {/* Master Key HUD in Header */}
+          {activeTeamMasterCode && (
+            <MasterKeyHud
+              masterCode={activeTeamMasterCode}
+              unlockedCount={activeTeamLevel && activeTeamLevel >= 3 ? 3 : 1}
+              size="sm"
+              className="hidden lg:flex"
+            />
+          )}
 
-          {/* Audio Toggle */}
+          {/* Start Game CTA */}
           <button
             type="button"
-            onClick={handleToggleAudio}
-            title={isMuted ? "Sound Disabled" : "Sound Enabled"}
-            aria-label="Toggle SFX"
-            className="w-9 h-9 flex items-center justify-center bg-neutral-900 border border-neutral-800 hover:border-[#ff5500] text-neutral-300 hover:text-white transition-colors"
+            onClick={handleStartGame}
+            className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 bg-[#ff5500] text-black font-bold text-xs tracking-wider uppercase hover:bg-white hover:text-black transition-all active:translate-y-0.5 shadow-[3px_3px_0px_0px_#ffffff] cursor-pointer"
           >
-            {isMuted ? (
-              <SpeakerSimpleSlash weight="bold" className="size-4 text-neutral-500" />
-            ) : (
-              <SpeakerHigh weight="bold" className="size-4 text-[#ff5500]" />
-            )}
-          </button>
-
-          {/* Ideas Modal CTA */}
-          <button
-            type="button"
-            onClick={() => {
-              sound.playClick(1000);
-              onOpenIdeasModal();
-            }}
-            className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 bg-[#ff5500] text-black font-bold text-xs tracking-wider uppercase hover:bg-white hover:text-black transition-all active:translate-y-0.5 shadow-[3px_3px_0px_0px_#ffffff]"
-          >
-            <PaperPlaneTilt weight="bold" className="size-3.5" />
-            <span>SUBMIT IDEAS</span>
+            <Play weight="bold" className="size-3.5 shrink-0" />
+            <span>
+              {activeTeamName ? (
+                <span className="flex items-center gap-1.5">
+                  <span>RESUME [{activeTeamName}]</span>
+                  {activeTeamTimer && (
+                    <span className="px-1.5 py-0.2 bg-black text-[#ff5500] font-black text-[10px]">
+                      {activeTeamTimer}
+                    </span>
+                  )}
+                </span>
+              ) : (
+                "START GAME"
+              )}
+            </span>
           </button>
 
           {/* Mobile Menu Toggle */}
           <button
             type="button"
             onClick={() => {
-              sound.playClick(600);
               setMobileMenuOpen(!mobileMenuOpen);
             }}
             className="md:hidden w-9 h-9 flex items-center justify-center bg-neutral-900 border border-neutral-800 text-white"
@@ -147,12 +152,33 @@ export function Navbar({ onOpenIdeasModal }: NavbarProps) {
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-[#0a0a0c] border-b border-[#27272a] px-6 py-4 flex flex-col gap-3 font-mono text-xs">
+          {activeTeamMasterCode && (
+            <div className="py-2 border-b border-neutral-800 flex justify-center">
+              <MasterKeyHud
+                masterCode={activeTeamMasterCode}
+                unlockedCount={activeTeamLevel && activeTeamLevel >= 3 ? 3 : 1}
+                size="sm"
+              />
+            </div>
+          )}
+          {activeTeamName && (
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                handleStartGame();
+              }}
+              className="w-full py-2.5 bg-[#ff5500] text-black font-black tracking-wider uppercase text-center flex items-center justify-center gap-2"
+            >
+              <Play weight="bold" className="size-4" />
+              <span>RESUME [{activeTeamName}] {activeTeamTimer ? `(${activeTeamTimer})` : ""}</span>
+            </button>
+          )}
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
               onClick={() => {
-                sound.playClick(750);
                 setMobileMenuOpen(false);
               }}
               className="text-neutral-300 hover:text-[#ff5500] py-2 border-b border-neutral-800 tracking-wider"
@@ -163,9 +189,8 @@ export function Navbar({ onOpenIdeasModal }: NavbarProps) {
           <button
             type="button"
             onClick={() => {
-              sound.playClick(1000);
               setMobileMenuOpen(false);
-              onOpenIdeasModal();
+              onOpenIdeasModal?.();
             }}
             className="w-full mt-2 py-2.5 bg-[#ff5500] text-black font-bold tracking-wider uppercase text-center flex items-center justify-center gap-2"
           >
@@ -177,4 +202,3 @@ export function Navbar({ onOpenIdeasModal }: NavbarProps) {
     </header>
   );
 }
-

@@ -1,6 +1,5 @@
 "use client";
 
-import { sound } from "@/lib/sound";
 import { 
   LockOpen, 
   ArrowUp, 
@@ -11,7 +10,6 @@ import {
 
 export function Footer() {
   const scrollToTop = () => {
-    sound.playClick(900);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -49,7 +47,6 @@ export function Footer() {
               <li>
                 <a
                   href="#rounds"
-                  onClick={() => sound.playClick(750)}
                   className="hover:text-[#ff5500] transition-colors"
                 >
                   [01] The 4 Rounds
@@ -58,7 +55,6 @@ export function Footer() {
               <li>
                 <a
                   href="#rules"
-                  onClick={() => sound.playClick(750)}
                   className="hover:text-[#ff5500] transition-colors"
                 >
                   [02] Rules & Regulations
@@ -67,7 +63,6 @@ export function Footer() {
               <li>
                 <a
                   href="#coordinators"
-                  onClick={() => sound.playClick(750)}
                   className="hover:text-[#ff5500] transition-colors"
                 >
                   [03] Organising Team
