@@ -69,19 +69,19 @@ export const EVENT_DATA = {
     {
       number: 2,
       code: "L2",
-      name: "LOGICAL & ANALYTICAL",
-      subtitle: "Pattern Recognition & Ciphers",
+      name: "TECHNICAL CHALLENGE",
+      subtitle: "DSA & Algorithmic Debugging",
       description:
-        "A technical challenge designed to push deduction skills. Puzzles and problems that test logical thinking, pattern recognition and analytical breakdown.",
+        "A DSA based question and round. Technical problems involving algorithms, coding, debugging and real-time thinking.",
       detailedMechanic:
-        "Cryptographic deduction: Decrypt encoded signals, detect mathematical anomalies, and extrapolate sequence progressions under clock pressure.",
+        "Time and space bounded algorithmic tests: Debug flawed implementations, optimize recursion bottlenecks, and capture flags across mini-CTF networks.",
       example_ideas: [
-        "Logic puzzles",
-        "Pattern or sequence based problems",
-        "Cipher / encoding decoding",
-        "Data or information analysis",
+        "Debug a given code",
+        "Implement a specific algorithm",
+        "Solve a problem with constraints",
+        "Mini CTF / web or network based challenge",
       ],
-      feedback_prompt: "YOUR SUGGESTIONS?",
+      feedback_prompt: "YOUR IDEAS?",
       isUnlockedInitially: false,
       accentColor: "#FF6B00",
     },
