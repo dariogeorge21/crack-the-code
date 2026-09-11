@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminSupabase, isSupabaseConfigured, triggerLocalReset } from "@/lib/supabase";
+import { TOTAL_TEAMS } from "@/constants";
 
 export async function POST() {
   try {
@@ -10,7 +11,7 @@ export async function POST() {
 
       // 1. Reset all teams, flush master keys and flush team codes in parallel
       await Promise.all(
-        Array.from({ length: 11 }, (_, idx) => {
+        Array.from({ length: TOTAL_TEAMS }, (_, idx) => {
           const teamNum = idx + 1;
           const placeholderCode = `RESET_${teamNum < 10 ? "0" : ""}${teamNum}`;
           return supabase

@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS public.teams (
   first_digit INT,
   master_code VARCHAR(10),
   completed_level1_at TIMESTAMPTZ,
+  completed_level2_at TIMESTAMPTZ,
+  completed_level3_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

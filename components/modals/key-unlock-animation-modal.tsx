@@ -13,10 +13,12 @@ import {
 
 interface KeyUnlockAnimationModalProps {
   isOpen: boolean;
-  digits: [string, string];
+  digits: [string, string] | string[];
   maskedMasterCode: string;
   onComplete: () => void;
   onSettled?: () => void;
+  accessCode?: string;
+  subtitle?: string;
 }
 
 export function KeyUnlockAnimationModal({
@@ -25,6 +27,8 @@ export function KeyUnlockAnimationModal({
   maskedMasterCode,
   onComplete,
   onSettled,
+  accessCode = "88",
+  subtitle,
 }: KeyUnlockAnimationModalProps) {
   // Animation phases:
   // "intro": 2 numbers pop up in the center stage; the Master Key below shows slots 1 & 2 masked as "*"
@@ -240,9 +244,13 @@ export function KeyUnlockAnimationModal({
         </h2>
 
         <p className="text-xs text-neutral-300 mb-4 max-w-md mx-auto">
-          Airport queue verified. Access code{" "}
-          <strong className="text-[#ff5500]">41</strong> has extracted the next 2
-          digits of your team&apos;s Master Key!
+          {subtitle || (
+            <>
+              Diamond pattern verified. Access code{" "}
+              <strong className="text-[#ff5500]">{accessCode}</strong> has extracted the next 2
+              digits of your team&apos;s Master Key!
+            </>
+          )}
         </p>
 
         {/* Center Stage: Popping Digits */}
@@ -302,7 +310,7 @@ export function KeyUnlockAnimationModal({
             {phase === "settled" && (
               <div className="flex items-center gap-1.5 text-emerald-400">
                 <Sparkle weight="fill" className="size-3.5 text-emerald-300 animate-spin" />
-                <span className="uppercase tracking-wider text-[11px]">
+                <span className="uppercase tracking-wider text-[11px] font-bold">
                   TRANSFER COMPLETE // 3 OF 10 DIGITS UNLOCKED!
                 </span>
               </div>
@@ -375,11 +383,7 @@ export function KeyUnlockAnimationModal({
         <button
           type="button"
           onClick={onComplete}
-          className={`w-full py-3.5 px-6 font-black text-xs sm:text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer active:translate-y-0.5 ${
-            phase === "settled"
-              ? "bg-[#ff5500] hover:bg-white text-black shadow-[4px_4px_0px_0px_#ffffff] scale-[1.01]"
-              : "bg-neutral-800 text-neutral-400 cursor-not-allowed opacity-75"
-          }`}
+          className="w-full py-4 px-6 font-black text-xs sm:text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer active:translate-y-0.5 bg-[#ff5500] hover:bg-white text-black shadow-[4px_4px_0px_0px_#ffffff] hover:shadow-[6px_6px_0px_0px_#ffffff]"
         >
           <span>PROCEED // LEVEL 03 UNLOCKED</span>
           <ArrowRight weight="bold" className="size-4" />

@@ -13,11 +13,11 @@ export async function POST(req: Request) {
 
     const trimmedCode = teamCode.trim();
 
-    // Verify Access Code (expected 88 for Diamond Pattern, with backwards tolerance for 41)
+    // Verify Access Code if supplied (expected 41 for Airport Simulation, with tolerance for 88)
     const cleanAccessCode = (accessCode || "").toString().trim();
-    if (cleanAccessCode !== ROUND_ACCESS_CODES.ROUND_2 && cleanAccessCode !== ROUND_ACCESS_CODES.ROUND_3) {
+    if (cleanAccessCode && cleanAccessCode !== ROUND_ACCESS_CODES.ROUND_3 && cleanAccessCode !== ROUND_ACCESS_CODES.ROUND_2) {
       return NextResponse.json(
-        { error: `INVALID ACCESS CODE FOR ROUND 2. Expected ${ROUND_ACCESS_CODES.ROUND_2}.` },
+        { error: `INVALID ACCESS CODE FOR ROUND 3. Expected ${ROUND_ACCESS_CODES.ROUND_3}.` },
         { status: 400 }
       );
     }
@@ -39,9 +39,9 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Team not found" }, { status: 404 });
       }
 
-      if (team.current_level < 2) {
+      if (team.current_level < 3) {
         return NextResponse.json(
-          { error: "ACCESS DENIED: Must clear Level 1 first." },
+          { error: "ACCESS DENIED: Must clear Level 2 first." },
           { status: 403 }
         );
       }
@@ -57,43 +57,49 @@ export async function POST(req: Request) {
         fullMasterCode = (prefix + rest).slice(0, 10);
       }
 
-      // The next 2 digits are index 1 and 2
-      const digit2 = fullMasterCode[1];
-      const digit3 = fullMasterCode[2];
-      const newDigits = [digit2, digit3];
+      // The next 3 digits are index 3, 4, 5 (revealing 6 of 10 digits total)
+      const digit4 = fullMasterCode[3] || "8";
+      const digit5 = fullMasterCode[4] || "4";
+      const digit6 = fullMasterCode[5] || "2";
+      const newDigits = [digit4, digit5, digit6];
 
-      // New masked code reveals 3 digits, 7 asterisks
-      const newMaskedCode = fullMasterCode.slice(0, 3) + "*******";
+      // New masked code reveals 6 digits, 4 asterisks
+      const newMaskedCode = fullMasterCode.slice(0, 6) + "****";
 
-      // Advance to level 3 if currently at level 2
-      const nextLevel = Math.max(team.current_level, 3);
+      // Advance to level 4 if currently at level 3
+      const nextLevel = Math.max(team.current_level, 4);
+
+      // Extract existing splits from round1_answer
+      const { completedLevel2At } = extractLevelSplits(team.round1_answer);
+      const effectiveL2At = team.completed_level2_at || completedLevel2At || null;
 
       // Compute split times
-      let l2Seconds: number | null = null;
+      let l3Seconds: number | null = null;
       let totalSeconds: number | null = null;
+      let l2Seconds: number | null = null;
       let l1Seconds: number | null = null;
 
       if (team.started_at) {
         const startMs = new Date(team.started_at).getTime();
-        if (team.completed_level1_at) {
-          const l1Ms = new Date(team.completed_level1_at).getTime();
-          l1Seconds = Math.max(0, Math.floor((l1Ms - startMs) / 1000));
-          l2Seconds = Math.max(0, Math.floor((nowMs - l1Ms) / 1000));
-          totalSeconds = l1Seconds + l2Seconds;
-        } else {
-          totalSeconds = Math.max(0, Math.floor((nowMs - startMs) / 1000));
-          l2Seconds = totalSeconds;
-        }
+        const l1Ms = team.completed_level1_at ? new Date(team.completed_level1_at).getTime() : startMs;
+        l1Seconds = Math.max(0, Math.floor((l1Ms - startMs) / 1000));
+
+        const l2Ms = effectiveL2At ? new Date(effectiveL2At).getTime() : l1Ms;
+        l2Seconds = Math.max(0, Math.floor((l2Ms - l1Ms) / 1000));
+
+        l3Seconds = Math.max(0, Math.floor((nowMs - l2Ms) / 1000));
+        totalSeconds = l1Seconds + l2Seconds + l3Seconds;
       }
 
+      const l3SplitFormatted = l3Seconds !== null ? formatDuration(l3Seconds) : null;
       const l2SplitFormatted = l2Seconds !== null ? formatDuration(l2Seconds) : null;
       const l1SplitFormatted = l1Seconds !== null ? formatDuration(l1Seconds) : null;
       const totalFormatted = totalSeconds !== null ? formatDuration(totalSeconds) : null;
 
-      // Schema-resilient split storage: append [L2:<iso>] to round1_answer
-      const updatedRound1Answer = appendLevelSplit(team.round1_answer, 2, now);
+      // Schema-resilient split storage: append [L3:<iso>] to round1_answer
+      const updatedRound1Answer = appendLevelSplit(team.round1_answer, 3, now);
 
-      // Update team with level advancement and L2 tagged timestamp
+      // Update team with level advancement and L3 tagged timestamp
       const updatePayload: Record<string, unknown> = {
         master_code: fullMasterCode,
         current_level: nextLevel,
@@ -109,7 +115,7 @@ export async function POST(req: Request) {
         .single();
 
       if (updateErr || !updatedTeam) {
-        console.error("submit-round2 db update error:", updateErr);
+        console.error("submit-round3 db update error:", updateErr);
         return NextResponse.json({ error: "Failed to update team progress" }, { status: 500 });
       }
 
@@ -118,7 +124,8 @@ export async function POST(req: Request) {
         ...updatedTeam,
         round1_answer: cleanAnswer,
         master_code: newMaskedCode,
-        completed_level2_at: now,
+        completed_level2_at: effectiveL2At,
+        completed_level3_at: now,
       };
 
       return NextResponse.json({
@@ -126,16 +133,17 @@ export async function POST(req: Request) {
         currentLevel: nextLevel,
         levelCleared: true,
         revealedDigits: newDigits,
-        unlockedCount: 3,
+        unlockedCount: 6,
         maskedMasterCode: newMaskedCode,
         team: safeTeam,
-        serverTime: now,
-        completed_level2_at: now,
+        completed_level3_at: now,
         splitTime: {
           l1Seconds,
           l1Formatted: l1SplitFormatted,
           l2Seconds,
           l2Formatted: l2SplitFormatted,
+          l3Seconds,
+          l3Formatted: l3SplitFormatted,
           totalSeconds,
           totalFormatted,
         },
@@ -149,9 +157,9 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Team not found" }, { status: 404 });
       }
 
-      if (team.current_level < 2) {
+      if (team.current_level < 3) {
         return NextResponse.json(
-          { error: "ACCESS DENIED: Must clear Level 1 first." },
+          { error: "ACCESS DENIED: Must clear Level 2 first." },
           { status: 403 }
         );
       }
@@ -166,40 +174,44 @@ export async function POST(req: Request) {
         fullMasterCode = (prefix + rest).slice(0, 10);
       }
 
-      const digit2 = fullMasterCode[1];
-      const digit3 = fullMasterCode[2];
-      const newDigits = [digit2, digit3];
-      const newMaskedCode = fullMasterCode.slice(0, 3) + "*******";
+      const digit4 = fullMasterCode[3] || "8";
+      const digit5 = fullMasterCode[4] || "4";
+      const digit6 = fullMasterCode[5] || "2";
+      const newDigits = [digit4, digit5, digit6];
 
-      const nextLevel = Math.max(team.current_level, 3);
+      const newMaskedCode = fullMasterCode.slice(0, 6) + "****";
+      const nextLevel = Math.max(team.current_level, 4);
 
-      // Compute split times
-      let l2Seconds: number | null = null;
+      const { completedLevel2At } = extractLevelSplits(team.round1_answer);
+      const effectiveL2At = team.completed_level2_at || completedLevel2At || null;
+
+      let l3Seconds: number | null = null;
       let totalSeconds: number | null = null;
+      let l2Seconds: number | null = null;
       let l1Seconds: number | null = null;
 
       if (team.started_at) {
         const startMs = new Date(team.started_at).getTime();
-        if (team.completed_level1_at) {
-          const l1Ms = new Date(team.completed_level1_at).getTime();
-          l1Seconds = Math.max(0, Math.floor((l1Ms - startMs) / 1000));
-          l2Seconds = Math.max(0, Math.floor((nowMs - l1Ms) / 1000));
-          totalSeconds = l1Seconds + l2Seconds;
-        } else {
-          totalSeconds = Math.max(0, Math.floor((nowMs - startMs) / 1000));
-          l2Seconds = totalSeconds;
-        }
+        const l1Ms = team.completed_level1_at ? new Date(team.completed_level1_at).getTime() : startMs;
+        l1Seconds = Math.max(0, Math.floor((l1Ms - startMs) / 1000));
+
+        const l2Ms = effectiveL2At ? new Date(effectiveL2At).getTime() : l1Ms;
+        l2Seconds = Math.max(0, Math.floor((l2Ms - l1Ms) / 1000));
+
+        l3Seconds = Math.max(0, Math.floor((nowMs - l2Ms) / 1000));
+        totalSeconds = l1Seconds + l2Seconds + l3Seconds;
       }
 
+      const l3SplitFormatted = l3Seconds !== null ? formatDuration(l3Seconds) : null;
       const l2SplitFormatted = l2Seconds !== null ? formatDuration(l2Seconds) : null;
       const l1SplitFormatted = l1Seconds !== null ? formatDuration(l1Seconds) : null;
       const totalFormatted = totalSeconds !== null ? formatDuration(totalSeconds) : null;
 
-      const updatedRound1Answer = appendLevelSplit(team.round1_answer, 2, now);
-      team.master_code = fullMasterCode;
+      const updatedRound1Answer = appendLevelSplit(team.round1_answer, 3, now);
       team.current_level = nextLevel;
+      team.master_code = fullMasterCode;
       team.round1_answer = updatedRound1Answer;
-      team.completed_level2_at = now;
+      team.completed_level3_at = now;
       team.updated_at = now;
 
       const { cleanAnswer } = extractLevelSplits(team.round1_answer);
@@ -214,23 +226,27 @@ export async function POST(req: Request) {
         currentLevel: nextLevel,
         levelCleared: true,
         revealedDigits: newDigits,
-        unlockedCount: 3,
+        unlockedCount: 6,
         maskedMasterCode: newMaskedCode,
         team: safeTeam,
-        serverTime: now,
-        completed_level2_at: now,
+        completed_level3_at: now,
         splitTime: {
           l1Seconds,
           l1Formatted: l1SplitFormatted,
           l2Seconds,
           l2Formatted: l2SplitFormatted,
+          l3Seconds,
+          l3Formatted: l3SplitFormatted,
           totalSeconds,
           totalFormatted,
         },
       });
     }
   } catch (err: unknown) {
-    console.error("submit-round2 error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("submit-round3 error:", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Internal server error" },
+      { status: 500 }
+    );
   }
 }

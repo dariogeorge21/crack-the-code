@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { EVENT_DATA, Coordinator } from "@/lib/event-data";
+import { EVENT_DATA } from "@/constants";
+import { Coordinator } from "@/types";
 import { 
   PhoneCall, 
   Copy, 

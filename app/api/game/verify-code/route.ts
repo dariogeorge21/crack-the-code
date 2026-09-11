@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
-import { getSupabase, isSupabaseConfigured, getLocalTeams, Team } from "@/lib/supabase";
+import { getSupabase, isSupabaseConfigured, getLocalTeams, Team, extractLevelSplits } from "@/lib/supabase";
 
 function computeMaskedMasterCode(masterCode: string | null, firstDigit: number | null, currentLevel: number): string | null {
   if (!masterCode && firstDigit === null) return null;
   const full = masterCode || (firstDigit !== null ? `${firstDigit}000000000` : "");
   if (!full) return null;
 
-  if (currentLevel >= 3) {
+  if (currentLevel >= 4) {
+    return full.slice(0, 6) + "****";
+  } else if (currentLevel >= 3) {
     return full.slice(0, 3) + "*******";
   } else if (currentLevel >= 2 || firstDigit !== null) {
     return full.slice(0, 1) + "*********";
@@ -43,8 +45,23 @@ export async function POST(req: Request) {
           const teams = getLocalTeams();
           const localTeam = teams.find((t) => t.team_code === trimmedCode);
           if (localTeam) {
+            const serverTime = new Date().toISOString();
+            if (!localTeam.started_at) {
+              localTeam.started_at = serverTime;
+            }
+            const { cleanAnswer, completedLevel2At, completedLevel3At } = extractLevelSplits(localTeam.round1_answer);
             const maskedCode = computeMaskedMasterCode(localTeam.master_code, localTeam.first_digit, localTeam.current_level);
-            return NextResponse.json({ success: true, team: { ...localTeam, master_code: maskedCode } });
+            return NextResponse.json({
+              success: true,
+              team: {
+                ...localTeam,
+                master_code: maskedCode,
+                round1_answer: cleanAnswer,
+                completed_level2_at: localTeam.completed_level2_at || completedLevel2At || null,
+                completed_level3_at: localTeam.completed_level3_at || completedLevel3At || null,
+              },
+              serverTime,
+            });
           }
         }
         return NextResponse.json({ error: "ACCESS DENIED: INVALID TEAM CODE" }, { status: 404 });
@@ -56,10 +73,30 @@ export async function POST(req: Request) {
       }
 
       const serverTime = new Date().toISOString();
+
+      // Anchor started_at upon initial login so Round 1 duration is properly recorded!
+      if (!team.started_at) {
+        const { error: startErr } = await supabase
+          .from("teams")
+          .update({ started_at: serverTime })
+          .eq("id", team.id);
+        if (!startErr) {
+          team.started_at = serverTime;
+        }
+      }
+
+      const { cleanAnswer, completedLevel2At, completedLevel3At } = extractLevelSplits(team.round1_answer);
       const maskedCode = computeMaskedMasterCode(team.master_code, team.first_digit, team.current_level);
+
       return NextResponse.json({ 
         success: true, 
-        team: { ...team, master_code: maskedCode },
+        team: { 
+          ...team, 
+          master_code: maskedCode,
+          round1_answer: cleanAnswer,
+          completed_level2_at: team.completed_level2_at || completedLevel2At || null,
+          completed_level3_at: team.completed_level3_at || completedLevel3At || null,
+        },
         serverTime
       });
     } else {
@@ -72,10 +109,24 @@ export async function POST(req: Request) {
       }
 
       const serverTime = new Date().toISOString();
+
+      // Anchor started_at upon initial login
+      if (!team.started_at) {
+        team.started_at = serverTime;
+      }
+
+      const { cleanAnswer, completedLevel2At, completedLevel3At } = extractLevelSplits(team.round1_answer);
       const maskedCode = computeMaskedMasterCode(team.master_code, team.first_digit, team.current_level);
+
       return NextResponse.json({ 
         success: true, 
-        team: { ...team, master_code: maskedCode },
+        team: { 
+          ...team, 
+          master_code: maskedCode,
+          round1_answer: cleanAnswer,
+          completed_level2_at: team.completed_level2_at || completedLevel2At || null,
+          completed_level3_at: team.completed_level3_at || completedLevel3At || null,
+        },
         serverTime
       });
     }

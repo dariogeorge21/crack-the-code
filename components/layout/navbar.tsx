@@ -107,7 +107,7 @@ export function Navbar({
           {activeTeamMasterCode && (
             <MasterKeyHud
               masterCode={activeTeamMasterCode}
-              unlockedCount={activeTeamLevel && activeTeamLevel >= 3 ? 3 : 1}
+              unlockedCount={activeTeamLevel && activeTeamLevel >= 4 ? 6 : activeTeamLevel && activeTeamLevel >= 3 ? 3 : 1}
               size="sm"
               className="hidden lg:flex"
             />
@@ -156,7 +156,7 @@ export function Navbar({
             <div className="py-2 border-b border-neutral-800 flex justify-center">
               <MasterKeyHud
                 masterCode={activeTeamMasterCode}
-                unlockedCount={activeTeamLevel && activeTeamLevel >= 3 ? 3 : 1}
+                unlockedCount={activeTeamLevel && activeTeamLevel >= 4 ? 6 : activeTeamLevel && activeTeamLevel >= 3 ? 3 : 1}
                 size="sm"
               />
             </div>

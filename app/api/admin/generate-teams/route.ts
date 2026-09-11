@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { getAdminSupabase, isSupabaseConfigured, getLocalTeams, setLocalTeams, Team } from "@/lib/supabase";
+import { getAdminSupabase, isSupabaseConfigured, setLocalTeams } from "@/lib/supabase";
+import { Team } from "@/types";
+import { TOTAL_TEAMS } from "@/constants";
 
 function generateUnique3DigitCodes(count: number): string[] {
   const codes = new Set<string>();
@@ -13,13 +15,13 @@ function generateUnique3DigitCodes(count: number): string[] {
 
 export async function POST() {
   try {
-    const codes = generateUnique3DigitCodes(11);
+    const codes = generateUnique3DigitCodes(TOTAL_TEAMS);
     const updatedTeams: Team[] = [];
 
     if (isSupabaseConfigured()) {
       const supabase = getAdminSupabase()!;
 
-      for (let i = 1; i <= 11; i++) {
+      for (let i = 1; i <= TOTAL_TEAMS; i++) {
         const teamNumber = i;
         const teamName = `Team ${i < 10 ? "0" : ""}${i}`;
         const teamCode = codes[i - 1];

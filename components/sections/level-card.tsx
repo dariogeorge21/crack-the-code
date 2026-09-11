@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { RoundData } from "@/lib/event-data";
+import { RoundData } from "@/types";
 import { 
   Lock, 
   LockOpen, 
@@ -175,6 +175,17 @@ export function LevelCard({ round }: LevelCardProps) {
                 >
                   <TerminalWindow weight="bold" className="size-3.5" />
                   <span>ACCESS ROUND 02 ARENA</span>
+                </Link>
+              </div>
+            )}
+            {round.number === 3 && (
+              <div className="mt-3 pt-2 border-t border-neutral-800">
+                <Link
+                  href="/level3"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#ff5500] hover:bg-white text-black font-black uppercase text-[11px] tracking-wider transition-colors shadow-[2px_2px_0px_0px_#ffffff]"
+                >
+                  <TerminalWindow weight="bold" className="size-3.5" />
+                  <span>ACCESS ROUND 03 ARENA</span>
                 </Link>
               </div>
             )}

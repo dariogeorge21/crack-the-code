@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Team } from "@/lib/supabase";
+import { Team } from "@/types";
 import { 
   Lock, 
   ShieldWarning, 

@@ -15,24 +15,13 @@ import {
   Users, 
   Timer, 
   Cpu, 
-  Sparkle 
+  Sparkle,
+  Eye,
+  EyeSlash
 } from "@phosphor-icons/react";
-
-interface AdminTeamData {
-  id: string;
-  team_number: number;
-  team_name: string;
-  team_code: string;
-  current_level: number;
-  started_at: string | null;
-  completed_level1_at: string | null;
-  time_taken_seconds: number | null;
-  time_taken_formatted: string;
-  round1_answer: string | null;
-  first_digit: number | null;
-  master_code: string | null;
-  status: string;
-}
+import { AdminTeamData } from "@/types";
+import { getLiveDuration } from "@/lib/time";
+import { getMaskedCode } from "@/lib/code-masking";
 
 interface AdminDashboardModalProps {
   isOpen: boolean;
@@ -40,6 +29,15 @@ interface AdminDashboardModalProps {
 }
 
 export function AdminDashboardModal({ isOpen, onClose }: AdminDashboardModalProps) {
+  // Live continuous clock tick (1s)
+  const [nowMs, setNowMs] = useState<number>(Date.now());
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNowMs(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   const [teams, setTeams] = useState<AdminTeamData[]>([]);
   const [loading, setLoading] = useState(false);
   const [autoPoll, setAutoPoll] = useState(true);
@@ -48,6 +46,15 @@ export function AdminDashboardModal({ isOpen, onClose }: AdminDashboardModalProp
   const [isResetting, setIsResetting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
+  const [showUnlockedOnly, setShowUnlockedOnly] = useState<boolean>(false);
+  const [rowCodeToggles, setRowCodeToggles] = useState<Record<string, boolean>>({});
+
+  const toggleRowCode = (id: string) => {
+    setRowCodeToggles((prev) => ({
+      ...prev,
+      [id]: !(prev[id] ?? showUnlockedOnly),
+    }));
+  };
 
   const fetchTeams = useCallback(async () => {
     try {
@@ -256,6 +263,25 @@ export function AdminDashboardModal({ isOpen, onClose }: AdminDashboardModalProp
               <ArrowClockwise weight="bold" className={`size-3.5 ${loading ? "animate-spin" : ""}`} />
               <span>REFRESH</span>
             </button>
+
+            {/* Eye Toggle Button: Unlocked vs Full Codes */}
+            <button
+              type="button"
+              onClick={() => setShowUnlockedOnly((prev) => !prev)}
+              className={`py-2 px-3 border font-black uppercase flex items-center gap-1.5 cursor-pointer transition-all ${
+                showUnlockedOnly
+                  ? "bg-emerald-950 border-emerald-500 text-emerald-400 shadow-[2px_2px_0px_0px_#10b981]"
+                  : "bg-neutral-900 hover:bg-neutral-800 border-neutral-700 text-neutral-300"
+              }`}
+              title="Toggle between showing unlocked digits only vs full master codes"
+            >
+              {showUnlockedOnly ? (
+                <EyeSlash weight="bold" className="size-3.5 text-emerald-400" />
+              ) : (
+                <Eye weight="bold" className="size-3.5 text-[#ff5500]" />
+              )}
+              <span>{showUnlockedOnly ? "SHOWING UNLOCKED ONLY" : "SHOW UNLOCKED ONLY"}</span>
+            </button>
           </div>
 
           {/* Reset Game Button */}
@@ -281,7 +307,27 @@ export function AdminDashboardModal({ isOpen, onClose }: AdminDashboardModalProp
                 <th className="p-3">Time Taken</th>
                 <th className="p-3">Code Got</th>
                 <th className="p-3">Round 1 Answer</th>
-                <th className="p-3">10-Digit Master Code</th>
+                <th className="p-3">
+                  <div className="flex items-center gap-2">
+                    <span>{showUnlockedOnly ? "Unlocked Team Code" : "10-Digit Master Code"}</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowUnlockedOnly((prev) => !prev)}
+                      title={showUnlockedOnly ? "Switch to full master codes" : "Switch to unlocked digits only"}
+                      className={`p-1 border rounded transition-colors cursor-pointer ${
+                        showUnlockedOnly
+                          ? "bg-emerald-950 border-emerald-500 text-emerald-400 hover:bg-emerald-900"
+                          : "bg-neutral-900 border-neutral-700 text-neutral-400 hover:text-white hover:border-neutral-500"
+                      }`}
+                    >
+                      {showUnlockedOnly ? (
+                        <EyeSlash weight="bold" className="size-3.5" />
+                      ) : (
+                        <Eye weight="bold" className="size-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-900">
@@ -311,7 +357,15 @@ export function AdminDashboardModal({ isOpen, onClose }: AdminDashboardModalProp
 
                   {/* Status Badge */}
                   <td className="p-3 whitespace-nowrap">
-                    {t.current_level >= 2 ? (
+                    {t.current_level >= 4 ? (
+                      <span className="px-2 py-0.5 bg-purple-950 text-purple-400 border border-purple-500/50 text-[10px] font-bold">
+                        L4 UNLOCKED
+                      </span>
+                    ) : t.current_level >= 3 ? (
+                      <span className="px-2 py-0.5 bg-cyan-950 text-cyan-400 border border-cyan-500/50 text-[10px] font-bold">
+                        L3 UNLOCKED
+                      </span>
+                    ) : t.current_level >= 2 ? (
                       <span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-500/50 text-[10px] font-bold">
                         L2 UNLOCKED
                       </span>
@@ -333,11 +387,72 @@ export function AdminDashboardModal({ isOpen, onClose }: AdminDashboardModalProp
                     </span>
                   </td>
 
-                  {/* Time Taken */}
+                  {/* Time Taken & Split Times */}
                   <td className="p-3 whitespace-nowrap">
-                    <span className="font-mono text-[#ff5500]">
-                      {t.time_taken_formatted}
-                    </span>
+                    {t.started_at ? (
+                      <div className="flex flex-col gap-0.5">
+                        <div className="flex items-center gap-1.5 font-mono text-[#ff5500] font-black text-sm">
+                          {t.current_level >= 4 ? (
+                            <>
+                              <span className="w-2 h-2 rounded-full bg-purple-400 inline-block" />
+                              <span>{t.total_time_formatted || t.time_taken_formatted}</span>
+                              <span className="text-[9px] px-1 py-0.2 bg-purple-950 border border-purple-500/50 text-purple-400 font-bold tracking-wider">
+                                DONE
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />
+                              <span>{getLiveDuration(t.started_at)}</span>
+                              <span className="text-[9px] px-1 py-0.2 bg-emerald-950 border border-emerald-500/50 text-emerald-400 font-bold tracking-wider">
+                                LIVE
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-0.5 mt-0.5 text-[10px] font-mono">
+                          {t.l1_time_formatted ? (
+                            <div className="flex items-center gap-1.5 text-neutral-400">
+                              <span className="text-neutral-500 font-bold">L1 Split:</span>
+                              <span className="text-neutral-200 font-bold">{t.l1_time_formatted}</span>
+                            </div>
+                          ) : t.current_level === 1 ? (
+                            <div className="flex items-center gap-1.5 text-amber-400/80">
+                              <span className="text-amber-500/70 font-bold">L1:</span>
+                              <span className="italic">{getLiveDuration(t.started_at)} (in progress)</span>
+                            </div>
+                          ) : null}
+
+                          {t.l2_time_formatted ? (
+                            <div className="flex items-center gap-1.5 text-cyan-400">
+                              <span className="text-cyan-500 font-bold">L2 Split:</span>
+                              <span className="text-cyan-300 font-bold">{t.l2_time_formatted}</span>
+                            </div>
+                          ) : t.current_level === 2 && t.completed_level1_at ? (
+                            <div className="flex items-center gap-1.5 text-cyan-400/80">
+                              <span className="text-cyan-500/70 font-bold">L2:</span>
+                              <span className="italic">{getLiveDuration(t.completed_level1_at)} (in progress)</span>
+                            </div>
+                          ) : null}
+
+                          {t.l3_time_formatted ? (
+                            <div className="flex items-center gap-1.5 text-purple-400">
+                              <span className="text-purple-500 font-bold">L3 Split:</span>
+                              <span className="text-purple-300 font-bold">{t.l3_time_formatted}</span>
+                            </div>
+                          ) : t.current_level === 3 && (t.completed_level2_at || t.l2_time_formatted) ? (
+                            <div className="flex items-center gap-1.5 text-purple-400/80">
+                              <span className="text-purple-500/70 font-bold">L3:</span>
+                              <span className="italic">{getLiveDuration(t.completed_level2_at || null)} (in progress)</span>
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-neutral-500 font-mono text-xs">
+                        — IDLE —
+                      </span>
+                    )}
                   </td>
 
                   {/* Code They Got (First Number) */}
@@ -356,15 +471,47 @@ export function AdminDashboardModal({ isOpen, onClose }: AdminDashboardModalProp
                     {t.round1_answer || <span className="text-neutral-600">—</span>}
                   </td>
 
-                  {/* 10-Digit Master Code */}
+                  {/* 10-Digit Master Code / Unlocked Digits */}
                   <td className="p-3 whitespace-nowrap">
-                    {t.master_code ? (
-                      <span className="px-2 py-1 bg-neutral-950 border border-[#ff5500] text-[#ff5500] font-black tracking-widest text-xs select-all">
-                        {t.master_code}
-                      </span>
-                    ) : (
-                      <span className="text-neutral-600 text-xs">— NOT GENERATED —</span>
-                    )}
+                    {(() => {
+                      const isUnlockedOnly = rowCodeToggles[t.id] ?? showUnlockedOnly;
+                      const masked = getMaskedCode(t);
+                      const displayCode = isUnlockedOnly ? masked : t.master_code;
+
+                      if (!displayCode) {
+                        return <span className="text-neutral-600 text-xs">— NOT GENERATED —</span>;
+                      }
+
+                      return (
+                        <div className="inline-flex items-center gap-1.5">
+                          <span
+                            className={`px-2.5 py-1 font-black tracking-widest text-xs select-all ${
+                              isUnlockedOnly
+                                ? "bg-emerald-950/50 border border-emerald-500 text-emerald-400"
+                                : "bg-neutral-950 border border-[#ff5500] text-[#ff5500]"
+                            }`}
+                          >
+                            {displayCode}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => toggleRowCode(t.id)}
+                            title={isUnlockedOnly ? "Show full 10-digit code" : "Show unlocked code only"}
+                            className={`p-1 border rounded transition-colors cursor-pointer ${
+                              isUnlockedOnly
+                                ? "bg-emerald-950 border-emerald-500/80 text-emerald-400 hover:bg-emerald-900"
+                                : "bg-neutral-900 border-neutral-700 text-neutral-400 hover:text-white hover:border-neutral-500"
+                            }`}
+                          >
+                            {isUnlockedOnly ? (
+                              <EyeSlash weight="bold" className="size-3 text-emerald-400" />
+                            ) : (
+                              <Eye weight="bold" className="size-3 text-neutral-400" />
+                            )}
+                          </button>
+                        </div>
+                      );
+                    })()}
                   </td>
                 </tr>
               ))}

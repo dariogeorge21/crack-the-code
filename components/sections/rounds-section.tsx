@@ -1,6 +1,6 @@
 "use client";
 
-import { EVENT_DATA } from "@/lib/event-data";
+import { EVENT_DATA } from "@/constants";
 import { LevelCard } from "./level-card";
 import { 
   LockOpen, 

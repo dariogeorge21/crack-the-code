@@ -19,29 +19,14 @@ import {
   Cpu, 
   Sparkle, 
   SignOut,
-  House
+  House,
+  Eye,
+  EyeSlash
 } from "@phosphor-icons/react";
-
-interface AdminTeamData {
-  id: string;
-  team_number: number;
-  team_name: string;
-  team_code: string;
-  current_level: number;
-  started_at: string | null;
-  completed_level1_at: string | null;
-  time_taken_seconds: number | null;
-  time_taken_formatted: string;
-  total_time_seconds?: number | null;
-  total_time_formatted?: string;
-  l1_time_seconds?: number | null;
-  l1_time_formatted?: string | null;
-  round1_answer: string | null;
-  first_digit: number | null;
-  master_code: string | null;
-  status: string;
-  is_code_flushed?: boolean;
-}
+import { AdminTeamData } from "@/types";
+import { getLiveDuration } from "@/lib/time";
+import { getMaskedCode } from "@/lib/code-masking";
+import { TOTAL_TEAMS } from "@/constants";
 
 export default function AdminDashboardPage() {
   // Live continuous clock tick (1s)
@@ -52,20 +37,6 @@ export default function AdminDashboardPage() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
-
-  const getLiveDuration = (startedAt: string | null) => {
-    if (!startedAt) return "—";
-    const start = new Date(startedAt).getTime();
-    const diffSec = Math.max(0, Math.floor((nowMs - start) / 1000));
-    const mins = Math.floor(diffSec / 60);
-    const secs = diffSec % 60;
-    if (mins >= 60) {
-      const hrs = Math.floor(mins / 60);
-      const remMins = mins % 60;
-      return `${hrs}h ${remMins < 10 ? "0" : ""}${remMins}m ${secs < 10 ? "0" : ""}${secs}s`;
-    }
-    return `${mins < 10 ? "0" : ""}${mins}m ${secs < 10 ? "0" : ""}${secs}s`;
-  };
 
   // Auth State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -87,6 +58,15 @@ export default function AdminDashboardPage() {
   const [isResetting, setIsResetting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
+  const [showUnlockedOnly, setShowUnlockedOnly] = useState<boolean>(false);
+  const [rowCodeToggles, setRowCodeToggles] = useState<Record<string, boolean>>({});
+
+  const toggleRowCode = (id: string) => {
+    setRowCodeToggles((prev) => ({
+      ...prev,
+      [id]: !(prev[id] ?? showUnlockedOnly),
+    }));
+  };
 
   // Query server for current lockout status on load
   const checkLockoutStatus = useCallback(async () => {
@@ -529,6 +509,25 @@ export default function AdminDashboardPage() {
             <ArrowClockwise weight="bold" className={`size-4 ${loading ? "animate-spin" : ""}`} />
             <span>REFRESH DATA</span>
           </button>
+
+          {/* Eye Toggle Button: Unlocked vs Full Codes */}
+          <button
+            type="button"
+            onClick={() => setShowUnlockedOnly((prev) => !prev)}
+            className={`py-2.5 px-4 border font-black uppercase flex items-center gap-2 cursor-pointer transition-all ${
+              showUnlockedOnly
+                ? "bg-emerald-950 border-emerald-500 text-emerald-400 shadow-[2px_2px_0px_0px_#10b981]"
+                : "bg-neutral-900 hover:bg-neutral-800 border-neutral-700 text-neutral-300"
+            }`}
+            title="Toggle between showing unlocked digits only vs full master codes"
+          >
+            {showUnlockedOnly ? (
+              <EyeSlash weight="bold" className="size-4 text-emerald-400" />
+            ) : (
+              <Eye weight="bold" className="size-4 text-[#ff5500]" />
+            )}
+            <span>{showUnlockedOnly ? "SHOWING UNLOCKED ONLY" : "SHOW UNLOCKED ONLY"}</span>
+          </button>
         </div>
 
         {/* Reset Game Button */}
@@ -548,7 +547,7 @@ export default function AdminDashboardPage() {
           <div className="flex items-center gap-2">
             <Warning weight="bold" className="size-4 text-amber-400 shrink-0" />
             <span className="font-bold">TEAM CODES FLUSHED:</span>
-            <span>All participant team codes are cleared. Click &quot;GENERATE TEAMS &amp; CODES&quot; to issue fresh 3-digit access codes for all 11 teams.</span>
+            <span>All participant team codes are cleared. Click &quot;GENERATE TEAMS &amp; CODES&quot; to issue fresh 3-digit access codes for all {TOTAL_TEAMS} teams.</span>
           </div>
           <button
             type="button"
@@ -556,7 +555,7 @@ export default function AdminDashboardPage() {
             disabled={isGenerating}
             className="px-3.5 py-1.5 bg-[#ff5500] hover:bg-white text-black font-black uppercase text-xs tracking-wider transition-colors cursor-pointer shadow-[2px_2px_0px_0px_#ffffff] shrink-0"
           >
-            {isGenerating ? "GENERATING..." : "GENERATE CODES NOW"}
+            {isGenerating ? "GENERATE CODES NOW" : "GENERATE CODES NOW"}
           </button>
         </div>
       )}
@@ -573,7 +572,27 @@ export default function AdminDashboardPage() {
               <th className="p-3.5">Time Taken</th>
               <th className="p-3.5">Code Got (First Digit)</th>
               <th className="p-3.5">Round 1 Answer</th>
-              <th className="p-3.5">10-Digit Generated Master Code</th>
+              <th className="p-3.5">
+                <div className="flex items-center gap-2">
+                  <span>{showUnlockedOnly ? "Unlocked Team Code" : "10-Digit Generated Master Code"}</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowUnlockedOnly((prev) => !prev)}
+                    title={showUnlockedOnly ? "Switch to full master codes" : "Switch to unlocked digits only"}
+                    className={`p-1 border rounded transition-colors cursor-pointer ${
+                      showUnlockedOnly
+                        ? "bg-emerald-950 border-emerald-500 text-emerald-400 hover:bg-emerald-900"
+                        : "bg-neutral-900 border-neutral-700 text-neutral-400 hover:text-white hover:border-neutral-500"
+                    }`}
+                  >
+                    {showUnlockedOnly ? (
+                      <EyeSlash weight="bold" className="size-3.5" />
+                    ) : (
+                      <Eye weight="bold" className="size-3.5" />
+                    )}
+                  </button>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-900 font-mono">
@@ -609,7 +628,15 @@ export default function AdminDashboardPage() {
 
                 {/* Status Badge */}
                 <td className="p-3.5 whitespace-nowrap">
-                  {t.current_level >= 2 ? (
+                  {t.current_level >= 4 ? (
+                    <span className="px-2.5 py-1 bg-purple-950 text-purple-400 border border-purple-500/50 text-[10px] font-bold">
+                      LEVEL 4 UNLOCKED
+                    </span>
+                  ) : t.current_level >= 3 ? (
+                    <span className="px-2.5 py-1 bg-cyan-950 text-cyan-400 border border-cyan-500/50 text-[10px] font-bold">
+                      LEVEL 3 UNLOCKED
+                    </span>
+                  ) : t.current_level >= 2 ? (
                     <span className="px-2.5 py-1 bg-emerald-950 text-emerald-400 border border-emerald-500/50 text-[10px] font-bold">
                       LEVEL 2 UNLOCKED
                     </span>
@@ -635,27 +662,70 @@ export default function AdminDashboardPage() {
                   </span>
                 </td>
 
-                {/* Time Taken (Continuously Running from started_at, starts upon Master Key derivation) */}
+                {/* Time Taken & Split Tracking */}
                 <td className="p-3.5 whitespace-nowrap">
                   {t.started_at ? (
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-1.5 font-mono text-[#ff5500] font-black text-sm">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />
-                        <span>{getLiveDuration(t.started_at)}</span>
-                        <span className="text-[9px] px-1 py-0.2 bg-emerald-950 border border-emerald-500/50 text-emerald-400 font-bold tracking-wider">
-                          LIVE
-                        </span>
+                        {t.current_level >= 4 ? (
+                          <>
+                            <span className="w-2 h-2 rounded-full bg-purple-400 inline-block" />
+                            <span>{t.total_time_formatted || t.time_taken_formatted}</span>
+                            <span className="text-[9px] px-1 py-0.2 bg-purple-950 border border-purple-500/50 text-purple-400 font-bold tracking-wider">
+                              DONE
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />
+                            <span>{getLiveDuration(t.started_at)}</span>
+                            <span className="text-[9px] px-1 py-0.2 bg-emerald-950 border border-emerald-500/50 text-emerald-400 font-bold tracking-wider">
+                              LIVE
+                            </span>
+                          </>
+                        )}
                       </div>
-                      {t.l1_time_formatted && (
-                        <div className="text-[10px] text-neutral-400 font-mono mt-0.5 flex items-center gap-1">
-                          <span className="text-neutral-500">L1 Split:</span>
-                          <span className="text-neutral-300 font-semibold">{t.l1_time_formatted}</span>
-                        </div>
-                      )}
+                      <div className="flex flex-col gap-0.5 mt-0.5 text-[10px] font-mono">
+                        {t.l1_time_formatted ? (
+                          <div className="flex items-center gap-1.5 text-neutral-400">
+                            <span className="text-neutral-500 font-bold">L1 Split:</span>
+                            <span className="text-neutral-200 font-bold">{t.l1_time_formatted}</span>
+                          </div>
+                        ) : t.current_level === 1 ? (
+                          <div className="flex items-center gap-1.5 text-amber-400/80">
+                            <span className="text-amber-500/70 font-bold">L1:</span>
+                            <span className="italic">{getLiveDuration(t.started_at)} (in progress)</span>
+                          </div>
+                        ) : null}
+
+                        {t.l2_time_formatted ? (
+                          <div className="flex items-center gap-1.5 text-cyan-400">
+                            <span className="text-cyan-500 font-bold">L2 Split:</span>
+                            <span className="text-cyan-300 font-bold">{t.l2_time_formatted}</span>
+                          </div>
+                        ) : t.current_level === 2 && t.completed_level1_at ? (
+                          <div className="flex items-center gap-1.5 text-cyan-400/80">
+                            <span className="text-cyan-500/70 font-bold">L2:</span>
+                            <span className="italic">{getLiveDuration(t.completed_level1_at)} (in progress)</span>
+                          </div>
+                        ) : null}
+
+                        {t.l3_time_formatted ? (
+                          <div className="flex items-center gap-1.5 text-purple-400">
+                            <span className="text-purple-500 font-bold">L3 Split:</span>
+                            <span className="text-purple-300 font-bold">{t.l3_time_formatted}</span>
+                          </div>
+                        ) : t.current_level === 3 && (t.completed_level2_at || t.l2_time_formatted) ? (
+                          <div className="flex items-center gap-1.5 text-purple-400/80">
+                            <span className="text-purple-500/70 font-bold">L3:</span>
+                            <span className="italic">{getLiveDuration(t.completed_level2_at || null)} (in progress)</span>
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
                   ) : (
                     <span className="text-neutral-500 font-mono text-xs">
-                      — PENDING MASTER KEY —
+                      — IDLE —
                     </span>
                   )}
                 </td>
@@ -676,15 +746,47 @@ export default function AdminDashboardPage() {
                   {t.round1_answer || <span className="text-neutral-600">—</span>}
                 </td>
 
-                {/* 10-Digit Master Code */}
+                {/* 10-Digit Master Code / Unlocked Digits */}
                 <td className="p-3.5 whitespace-nowrap">
-                  {t.master_code ? (
-                    <span className="px-3 py-1 bg-neutral-950 border border-[#ff5500] text-[#ff5500] font-black tracking-widest text-xs select-all shadow-[2px_2px_0px_0px_#ffffff]">
-                      {t.master_code}
-                    </span>
-                  ) : (
-                    <span className="text-neutral-600 text-xs">— NOT DERIVED —</span>
-                  )}
+                  {(() => {
+                    const isUnlockedOnly = rowCodeToggles[t.id] ?? showUnlockedOnly;
+                    const masked = getMaskedCode(t);
+                    const displayCode = isUnlockedOnly ? masked : t.master_code;
+
+                    if (!displayCode) {
+                      return <span className="text-neutral-600 text-xs">— NOT DERIVED —</span>;
+                    }
+
+                    return (
+                      <div className="inline-flex items-center gap-2">
+                        <span
+                          className={`px-3 py-1 font-black tracking-widest text-xs select-all shadow-[2px_2px_0px_0px_#ffffff] ${
+                            isUnlockedOnly
+                              ? "bg-emerald-950/50 border border-emerald-500 text-emerald-400"
+                              : "bg-neutral-950 border border-[#ff5500] text-[#ff5500]"
+                          }`}
+                        >
+                          {displayCode}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => toggleRowCode(t.id)}
+                          title={isUnlockedOnly ? "Show full 10-digit code" : "Show unlocked code only"}
+                          className={`p-1 border rounded transition-colors cursor-pointer ${
+                            isUnlockedOnly
+                              ? "bg-emerald-950 border-emerald-500/80 text-emerald-400 hover:bg-emerald-900"
+                              : "bg-neutral-900 border-neutral-700 text-neutral-400 hover:text-white hover:border-neutral-500"
+                          }`}
+                        >
+                          {isUnlockedOnly ? (
+                            <EyeSlash weight="bold" className="size-3.5" />
+                          ) : (
+                            <Eye weight="bold" className="size-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })()}
                 </td>
               </tr>
             ))}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   Play,
   ArrowClockwise,
@@ -12,42 +12,11 @@ import {
   Terminal,
 } from "@phosphor-icons/react";
 
-export type SupportedLanguage = "python" | "c" | "cpp" | "java";
+import { SupportedLanguage } from "@/types";
+import { STARTER_CODES } from "@/constants";
 
-export const STARTER_CODES: Record<SupportedLanguage, string> = {
-  python: `# Code here
-`,
-
-  c: `#include <stdio.h>
-
-int main() {
-    // Your code here
-
-    return 0;
-}
-`,
-
-  cpp: `#include <iostream>
-
-using namespace std;
-
-int main() {
-    // Your code here
-
-    return 0;
-}
-`,
-
-  java: `import java.util.*;
-
-public class Main {
-    public static void main(String[] args) {
-        // Your code here
-
-    }
-}
-`,
-};
+export type { SupportedLanguage };
+export { STARTER_CODES };
 
 interface LeetCodeEditorPaneProps {
   language: SupportedLanguage;
@@ -60,7 +29,7 @@ interface LeetCodeEditorPaneProps {
   onToggleDrawer?: () => void;
 }
 
-export default function LeetCodeEditorPane({
+export function LeetCodeEditorPane({
   language,
   onLanguageChange,
   code,
@@ -73,13 +42,6 @@ export default function LeetCodeEditorPane({
   const [copied, setCopied] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
-
-  // When language changes or initial load, ensure code is populated
-  useEffect(() => {
-    if (!code) {
-      onCodeChange(STARTER_CODES[language]);
-    }
-  }, [language, code, onCodeChange]);
 
   const handleReset = () => {
     if (confirm("Reset editor to starter syntax?")) {
@@ -277,3 +239,5 @@ export default function LeetCodeEditorPane({
     </div>
   );
 }
+
+export default LeetCodeEditorPane;

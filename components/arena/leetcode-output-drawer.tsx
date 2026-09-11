@@ -16,17 +16,9 @@ import {
   ArrowRight,
 } from "@phosphor-icons/react";
 
-export interface ExecutionResult {
-  output: string;
-  error: string;
-  exitCode: number;
-  time: string;
-  memory: string;
-  source: string;
-  isCorrect: boolean;
-  hasAccessCode: boolean;
-  accessCode: string | null;
-}
+import { ExecutionResult } from "@/types";
+
+export type { ExecutionResult };
 
 interface LeetCodeOutputDrawerProps {
   isOpen: boolean;
@@ -37,9 +29,10 @@ interface LeetCodeOutputDrawerProps {
   currentHeight?: number;
   onResize?: (height: number) => void;
   isDocked?: boolean;
+  round?: number;
 }
 
-export default function LeetCodeOutputDrawer({
+export function LeetCodeOutputDrawer({
   isOpen,
   onClose,
   isRunning,
@@ -48,6 +41,7 @@ export default function LeetCodeOutputDrawer({
   currentHeight = 280,
   onResize,
   isDocked = true,
+  round = 2,
 }: LeetCodeOutputDrawerProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -131,7 +125,11 @@ export default function LeetCodeOutputDrawer({
               result.isCorrect ? (
                 <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/15 border border-emerald-500 text-emerald-400 font-black">
                   <CheckCircle weight="fill" className="size-4 text-emerald-400" />
-                  <span>ACCEPTED // ACCESS CODE VERIFIED</span>
+                  <span>
+                    {round === 2
+                      ? "ACCEPTED // DIAMOND PATTERN VERIFIED"
+                      : "ACCEPTED // ACCESS CODE VERIFIED"}
+                  </span>
                 </div>
               ) : result.exitCode !== 0 || result.error ? (
                 <div className="flex items-center gap-1.5 px-2.5 py-1 bg-red-950 border border-red-500/70 text-red-400 font-bold">
@@ -209,7 +207,9 @@ export default function LeetCodeOutputDrawer({
               DISPATCHING COMPILATION JOB...
             </div>
             <div className="text-[11px] text-neutral-500">
-              Simulating Cochin International Airport security line events
+              {round === 2
+                ? "Validating diamond matrix geometry & star pattern symmetry"
+                : "Simulating Cochin International Airport security line events"}
             </div>
           </div>
         ) : (
@@ -220,10 +220,14 @@ export default function LeetCodeOutputDrawer({
                   <ShieldCheck weight="bold" className="size-5 text-emerald-400 shrink-0" />
                   <div>
                     <span className="font-bold uppercase text-white">
-                      CHALLENGE SOLVED // ACCESS CODE UNLOCKED
+                      {round === 2
+                        ? "DIAMOND MATRIX VERIFIED // OPTICAL LATTICE ALIGNED"
+                        : "CHALLENGE SOLVED // ACCESS CODE UNLOCKED"}
                     </span>
                     <p className="text-[11px] text-emerald-400/90 mt-0.5">
-                      The queue state simulation matches the Cochin Airport security requirements.
+                      {round === 2
+                        ? "The diamond star pattern matches Central Command's geometric symmetry specifications."
+                        : "The queue state simulation matches the Cochin Airport security requirements."}
                     </p>
                   </div>
                 </div>
@@ -269,3 +273,5 @@ export default function LeetCodeOutputDrawer({
     </div>
   );
 }
+
+export default LeetCodeOutputDrawer;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { EVENT_DATA } from "@/lib/event-data";
+import { EVENT_DATA } from "@/constants";
 import { 
   X, 
   PaperPlaneTilt, 

@@ -32,7 +32,11 @@ const EVENT_LOG = [
   { step: 19, action: "NEXT", target: "John" },
 ];
 
-export default function LeetCodeProblemPane() {
+interface AirportProblemPaneProps {
+  round?: number;
+}
+
+export function AirportProblemPane({ round = 3 }: AirportProblemPaneProps = {}) {
   const [activeTab, setActiveTab] = useState<"desc" | "log" | "rules">("desc");
 
   return (
@@ -80,7 +84,7 @@ export default function LeetCodeProblemPane() {
 
         <div className="hidden sm:flex items-center gap-2">
           <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-[#ff5500]/10 text-[#ff5500] border border-[#ff5500]/30">
-            ROUND 02
+            ROUND 0{round}
           </span>
           <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
             MEDIUM
@@ -95,7 +99,7 @@ export default function LeetCodeProblemPane() {
             {/* Title & Metadata */}
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-mono font-bold text-[#ff5500]">PROBLEM 02 //</span>
+                <span className="text-xs font-mono font-bold text-[#ff5500]">PROBLEM 0{round} //</span>
                 <span className="text-xs font-mono text-neutral-500 uppercase">COCHIN AIRPORT SIMULATION</span>
               </div>
               <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
@@ -136,7 +140,7 @@ export default function LeetCodeProblemPane() {
                 <div>5. At various times, Airport Control requests the name of the passenger who will be screened next.</div>
               </div>
               <p className="text-neutral-300 mt-3 text-xs leading-relaxed">
-                Your task is to simulate the events exactly as they occur in chronological order and determine the final <strong>Access Code</strong> to clear Round 2.
+                Your task is to simulate the events exactly as they occur in chronological order and determine the final <strong>Access Code</strong> to clear Round {round}.
               </p>
             </div>
 
@@ -296,3 +300,5 @@ export default function LeetCodeProblemPane() {
     </div>
   );
 }
+
+export default AirportProblemPane;

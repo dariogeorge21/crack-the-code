@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Team } from "@/lib/supabase";
+import { Team } from "@/types";
+import { useMissionTimer } from "@/hooks";
+import { formatTimer } from "@/lib/time";
 import { 
   CheckCircle, 
   LockOpen, 
@@ -36,8 +38,10 @@ export function Round1Modal({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const [activeStartTime, setActiveStartTime] = useState<string | null>(team?.started_at || null);
+
+  // Live Timer: runs ONLY when activeStartTime (started_at upon master key generation) exists
+  const elapsedSeconds = useMissionTimer(isOpen ? activeStartTime : null);
 
   // Synchronize team props and session state
   useEffect(() => {
@@ -48,26 +52,6 @@ export function Round1Modal({
       setActiveStartTime(team.started_at || null);
     }
   }, [team]);
-
-  // Live Timer: runs ONLY when activeStartTime (started_at upon master key generation) exists
-  useEffect(() => {
-    if (!isOpen || !activeStartTime) {
-      setElapsedSeconds(0);
-      return;
-    }
-
-    const startTime = new Date(activeStartTime).getTime();
-
-    const updateTimer = () => {
-      const now = new Date().getTime();
-      const diff = Math.max(0, Math.floor((now - startTime) / 1000));
-      setElapsedSeconds(diff);
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-    return () => clearInterval(interval);
-  }, [isOpen, activeStartTime]);
 
   // Listen for admin reset signal
   useEffect(() => {
@@ -95,12 +79,6 @@ export function Round1Modal({
   }, [isOpen, team?.started_at, onClose]);
 
   if (!isOpen || !team) return null;
-
-  const formatTimer = (totalSeconds: number) => {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return `${mins < 10 ? "0" : ""}${mins}:${secs < 10 ? "0" : ""}${secs}`;
-  };
 
   const handleSubmitRound1 = async (e: React.FormEvent) => {
     e.preventDefault();

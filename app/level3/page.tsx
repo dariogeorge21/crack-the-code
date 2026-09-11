@@ -17,18 +17,18 @@ import {
   Code,
 } from "@phosphor-icons/react";
 import {
-  DiamondProblemPane,
+  AirportProblemPane,
   LeetCodeEditorPane,
   LeetCodeOutputDrawer,
 } from "@/components/arena";
 import { MasterKeyHud } from "@/components/layout";
-import { KeyUnlockAnimationModal } from "@/components/modals";
+import { Round3UnlockModal } from "@/components/modals";
 import { Team, SupportedLanguage, ExecutionResult } from "@/types";
 import { STARTER_CODES, SESSION_STORAGE_KEY } from "@/constants";
 import { useMissionTimer, usePreventBack } from "@/hooks";
 import { formatTimer } from "@/lib/time";
 
-export default function Round2Page() {
+export default function Round3Page() {
   const router = useRouter();
 
   // Trap back navigation in the active arena
@@ -39,6 +39,11 @@ export default function Round2Page() {
   const [activeTeam, setActiveTeam] = useState<Team | null>(null);
   const [isLocked, setIsLocked] = useState(false);
   const [lockReason, setLockReason] = useState<string>("");
+
+  // Clearance Banner & Key Unlock Modal state
+  const [clearedBanner, setClearedBanner] = useState<boolean>(false);
+  const [revealedDigits, setRevealedDigits] = useState<string[] | null>(null);
+  const [isUnlockModalOpen, setIsUnlockModalOpen] = useState<boolean>(false);
 
   // Mission timer state (anchored to team.started_at)
   const elapsedSeconds = useMissionTimer(activeTeam?.started_at);
@@ -69,13 +74,6 @@ export default function Round2Page() {
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
-
-  // Completion notification modal / banner & Key Unlock animation
-  const [clearedBanner, setClearedBanner] = useState<boolean>(false);
-  const [revealedDigits, setRevealedDigits] = useState<[string, string] | null>(null);
-  const [isUnlockModalOpen, setIsUnlockModalOpen] = useState<boolean>(false);
-  const [isKeyHighlighted, setIsKeyHighlighted] = useState<boolean>(false);
-  const [isKeySettled, setIsKeySettled] = useState<boolean>(false);
 
   // Split pane dimensions & Output Bar height state
   const [splitPercent, setSplitPercent] = useState<number>(46); // Left (Question) width %
@@ -154,15 +152,13 @@ export default function Round2Page() {
         setActiveTeam(team);
 
         // ACCESS CONTROL & AUTO-FORWARD:
-        // 1. If team has already completed Round 2 (Tier 3 or 4), forward them directly to Round 3!
-        if (team.current_level >= 3) {
-          router.replace("/level3");
-          return;
-        }
-
-        // 2. If team has not cleared Level 1 yet, redirect to Level 1
-        if (!team.current_level || team.current_level < 2) {
-          router.replace("/");
+        // If team has not reached Level 3 yet, redirect to their active round
+        if (!team.current_level || team.current_level < 3) {
+          if (team.current_level === 2) {
+            router.replace("/level2");
+          } else {
+            router.replace("/");
+          }
           return;
         }
 
@@ -180,7 +176,8 @@ export default function Round2Page() {
     verifyAccess();
   }, [router]);
 
-  // Run code handler
+
+  // Run code handler (connected to compiler with round: 3)
   const handleRunCode = useCallback(async () => {
     if (isRunning) return;
 
@@ -196,7 +193,7 @@ export default function Round2Page() {
           language,
           code: codeToRun,
           input: "",
-          round: 2,
+          round: 3,
         }),
       });
 
@@ -216,40 +213,34 @@ export default function Round2Page() {
 
       setExecutionResult(execResult);
 
-      if (execResult.isCorrect) {
+      if (execResult.isCorrect && activeTeam) {
         setClearedBanner(true);
-
-        // Claim Level 2 clearance and trigger Master Key unlock sequence
-        if (activeTeam) {
-          try {
-            const submitRes = await fetch("/api/game/submit-round2", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                teamCode: activeTeam.team_code,
-                accessCode: execResult.accessCode || "88",
-              }),
-            });
-            const submitData = await submitRes.json();
-            if (submitRes.ok && submitData.success) {
-              setActiveTeam((prev) =>
-                prev
-                  ? {
-                      ...prev,
-                      master_code: submitData.maskedMasterCode,
-                      current_level: 3,
-                      completed_level2_at: submitData.completed_level2_at || new Date().toISOString(),
-                    }
-                  : null
-              );
-              setRevealedDigits(submitData.revealedDigits);
-              setIsKeySettled(false);
-              setIsKeyHighlighted(false);
-              setIsUnlockModalOpen(true);
-            }
-          } catch (submitErr) {
-            console.error("Auto-submit Round 2 clearance error:", submitErr);
+        try {
+          const submitRes = await fetch("/api/game/submit-round3", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              teamCode: activeTeam.team_code,
+              accessCode: execResult.accessCode || "41",
+            }),
+          });
+          const submitData = await submitRes.json();
+          if (submitRes.ok && submitData.success) {
+            setActiveTeam((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    master_code: submitData.maskedMasterCode,
+                    current_level: 4,
+                    completed_level3_at: submitData.completed_level3_at || new Date().toISOString(),
+                  }
+                : null
+            );
+            setRevealedDigits(submitData.revealedDigits);
+            setIsUnlockModalOpen(true);
           }
+        } catch (submitErr) {
+          console.error("Auto-submit Round 3 clearance error:", submitErr);
         }
       }
     } catch (err: unknown) {
@@ -270,7 +261,7 @@ export default function Round2Page() {
     }
   }, [isRunning, language, codeMap, activeTeam]);
 
-  // Explicit claim clearance handler for manual drawer button
+  // Explicit claim clearance handler for manual button inside output drawer
   const handleClaimClearance = useCallback(async () => {
     if (!activeTeam) return;
     if (revealedDigits) {
@@ -278,12 +269,12 @@ export default function Round2Page() {
       return;
     }
     try {
-      const submitRes = await fetch("/api/game/submit-round2", {
+      const submitRes = await fetch("/api/game/submit-round3", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           teamCode: activeTeam.team_code,
-          accessCode: "88",
+          accessCode: "41",
         }),
       });
       const submitData = await submitRes.json();
@@ -293,18 +284,17 @@ export default function Round2Page() {
             ? {
                 ...prev,
                 master_code: submitData.maskedMasterCode,
-                current_level: 3,
-                completed_level2_at: submitData.completed_level2_at || new Date().toISOString(),
+                current_level: 4,
+                completed_level3_at: submitData.completed_level3_at || new Date().toISOString(),
               }
             : null
         );
         setRevealedDigits(submitData.revealedDigits);
-        setIsKeySettled(false);
-        setIsKeyHighlighted(false);
+        setClearedBanner(true);
         setIsUnlockModalOpen(true);
       }
-    } catch (err) {
-      console.error("Claim clearance error:", err);
+    } catch (submitErr) {
+      console.error("Round 3 clearance submit error:", submitErr);
     }
   }, [activeTeam, revealedDigits]);
 
@@ -343,81 +333,77 @@ export default function Round2Page() {
                 [CLEARANCE OVERRIDE REJECTED]
               </div>
               <h1 className="text-xl font-black text-white tracking-wide">
-                SECURITY LOCKOUT // ROUND 02
+                SECURITY LOCKOUT // ROUND 03
               </h1>
             </div>
           </div>
 
-          <div className="p-4 bg-red-950/40 border border-red-800 text-red-300 text-xs sm:text-sm leading-relaxed mb-6 font-mono">
-            <div className="font-bold text-red-400 uppercase mb-1">ACCESS DENIED:</div>
-            <p>{lockReason}</p>
+          <div className="p-4 bg-red-950/20 border border-red-900/60 text-xs text-red-200 mb-6 leading-relaxed">
+            {lockReason}
           </div>
 
-          <div className="p-4 bg-neutral-900 border border-neutral-800 text-xs text-neutral-400 mb-6 space-y-1.5">
-            <div className="text-white font-bold uppercase text-[11px]">REQUIREMENTS TO UNLOCK:</div>
-            <div>1. Access Level 1 via the main terminal.</div>
-            <div>2. Discover your physical challenge solution in the lab.</div>
-            <div>3. Enter your Round 1 answer and unlock your 10-digit Master Key.</div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link
+              href="/level2"
+              className="flex-1 py-3 px-4 bg-[#ff5500] hover:bg-white text-black font-black text-xs uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2 cursor-pointer shadow-[3px_3px_0px_0px_#ffffff]"
+            >
+              <ArrowLeft weight="bold" className="size-4" />
+              <span>GO TO ROUND 02 ARENA</span>
+            </Link>
+            <Link
+              href="/"
+              className="py-3 px-4 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 font-bold text-xs uppercase tracking-wider transition-colors text-center border border-neutral-800"
+            >
+              RETURN TO COMMAND HUB
+            </Link>
           </div>
-
-          <Link
-            href="/"
-            className="w-full py-3.5 px-4 bg-[#ff5500] hover:bg-white text-black font-black text-xs uppercase tracking-widest transition-all shadow-[4px_4px_0px_0px_#ffffff] flex items-center justify-center gap-2 cursor-pointer active:translate-y-0.5"
-          >
-            <ArrowLeft weight="bold" className="size-4" />
-            <span>RETURN TO LEVEL 01 TERMINAL</span>
-          </Link>
         </div>
       </div>
     );
   }
 
-  // Only reveal 3 digits in the header once the animation settles or if user arrived already at Tier 3
-  const isKeyRevealedInHeader =
-    (activeTeam && activeTeam.current_level >= 3 && !isUnlockModalOpen) ||
-    isKeySettled;
-
-  // AUTHORIZED LEETCODE INTERFACE
   return (
-    <div className="h-screen bg-[#07070a] text-white font-mono flex flex-col overflow-hidden select-none">
+    <div className="h-screen w-screen bg-[#07070a] text-white flex flex-col overflow-hidden font-mono select-none">
       {/* Top Cyber Navigation Bar */}
-      <header className="h-14 border-b border-neutral-800 bg-[#0c0c10] px-4 sm:px-6 flex items-center justify-between shrink-0 z-30">
-        {/* Left: Brand & Round */}
-        <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
-          <div className="flex items-center gap-1.5 text-xs text-neutral-400">
-            <span className="font-black text-[#ff5500] tracking-wider">ASTHRA 11.0</span>
-            <span className="text-neutral-700">/</span>
-            <span className="text-neutral-300 font-bold hidden sm:inline">ARENA 02</span>
+      <header className="h-14 border-b border-neutral-800 bg-[#0a0a0e] px-3 sm:px-4 flex items-center justify-between gap-2 shrink-0 z-40">
+        {/* Left: ASTHRA & Round Identifier */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-neutral-950 border border-neutral-800 text-xs text-neutral-300">
+            <span className="font-black tracking-wider text-[11px] text-[#ff5500]">ASTHRA 11.0</span>
+            <span className="text-neutral-700 hidden md:inline">|</span>
+            <span className="text-neutral-400 font-bold text-[11px] hidden md:inline">ARENA 03</span>
           </div>
 
           <div className="h-4 w-px bg-neutral-800 hidden sm:block" />
 
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 bg-[#ff5500] text-black font-black text-xs uppercase tracking-wider shrink-0">
-              ROUND 02
-            </span>
+            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-rose-500/10 border border-rose-500/40 text-rose-400 font-black text-xs uppercase tracking-wider">
+              <Code weight="bold" className="size-3.5 text-rose-400" />
+              <span>ROUND 03</span>
+            </div>
             <span className="text-xs sm:text-sm font-black tracking-wider uppercase text-white hidden md:inline">
-              Diamond Star Pattern Matrix
+              Airport Security Checkpoint
             </span>
           </div>
         </div>
 
-        {/* Center: Live Team Timer & Master Key Rack */}
+        {/* Center: Continuous Mission Timer & Master Key HUD */}
         <div className="flex items-center gap-2 sm:gap-4">
-          <div className="flex items-center gap-2 bg-neutral-900/90 border border-neutral-700 px-3 py-1 text-xs shrink-0">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
+          {/* Mission Timer */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#0e0e14] border border-neutral-800 text-xs">
             <Timer weight="bold" className="size-3.5 text-[#ff5500]" />
-            <span className="text-neutral-400 hidden lg:inline">MISSION:</span>
-            <span className="text-[#ff5500] font-black font-mono tracking-wider">
+            <span className="text-[10px] text-neutral-400 uppercase font-bold hidden sm:inline">
+              CLOCK:
+            </span>
+            <span className="font-mono font-black text-white text-xs sm:text-sm tracking-wider">
               {formatTimer(elapsedSeconds, true)}
             </span>
           </div>
 
-          {/* Master Key HUD in Desktop Header */}
+          {/* Master Key HUD displaying revealed digits */}
           <MasterKeyHud
             masterCode={activeTeam.master_code}
-            unlockedCount={activeTeam.current_level >= 4 ? 6 : (activeTeam.current_level >= 3 || isKeyRevealedInHeader) ? 3 : 1}
-            highlightNewDigits={isKeyHighlighted}
+            unlockedCount={activeTeam.current_level >= 4 ? 6 : 3}
             size="sm"
             className="hidden sm:flex"
           />
@@ -428,7 +414,7 @@ export default function Round2Page() {
           <span className="text-neutral-500 uppercase font-bold text-[11px] hidden sm:inline">TEAM:</span>
           <span className="text-white font-black">{activeTeam.team_name}</span>
           <span className="px-1.5 py-0.2 bg-[#ff5500]/20 text-[#ff5500] border border-[#ff5500]/40 font-black text-[10px] tracking-wider">
-            TIER 0{activeTeam.current_level}
+            {activeTeam.current_level >= 4 ? "TIER 04" : "TIER 03"}
           </span>
         </div>
       </header>
@@ -437,12 +423,11 @@ export default function Round2Page() {
       <div className="sm:hidden bg-[#09090d] border-b border-neutral-800 px-4 py-1.5 flex items-center justify-between text-xs">
         <MasterKeyHud
           masterCode={activeTeam.master_code}
-          unlockedCount={activeTeam.current_level >= 4 ? 6 : (activeTeam.current_level >= 3 || isKeyRevealedInHeader) ? 3 : 1}
-          highlightNewDigits={isKeyHighlighted}
+          unlockedCount={activeTeam.current_level >= 4 ? 6 : 3}
           size="sm"
         />
         <span className="text-[10px] text-neutral-400 font-mono">
-          TIER 0{activeTeam.current_level}
+          {activeTeam.current_level >= 4 ? "TIER 04" : "TIER 03"}
         </span>
       </div>
 
@@ -451,15 +436,15 @@ export default function Round2Page() {
         <div className="bg-emerald-500 text-black px-4 py-2 text-xs font-black uppercase tracking-wider flex items-center justify-between shrink-0 animate-in slide-in-from-top-2 duration-300">
           <div className="flex items-center gap-2">
             <CheckCircle weight="fill" className="size-4" />
-            <span>DIAMOND PATTERN VERIFIED // ROUND 2 CLEARED!</span>
+            <span>ACCESS CODE 41 VERIFIED // ROUND 3 CLEARED!</span>
           </div>
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => router.replace("/level3")}
+              onClick={() => setIsUnlockModalOpen(true)}
               className="px-3 py-1 bg-black text-white hover:bg-neutral-900 font-black text-[11px] tracking-widest border border-black uppercase flex items-center gap-1.5 transition-colors cursor-pointer shadow-[2px_2px_0px_0px_#ffffff]"
             >
-              <span>ENTER ROUND 03 ARENA</span>
+              <span>VIEW CIPHER KEYS</span>
             </button>
             <button
               type="button"
@@ -479,7 +464,7 @@ export default function Round2Page() {
           isDraggingSplitter ? "select-none" : ""
         }`}
       >
-        {/* Left Pane: Problem Statement & Event Log (Resizable) */}
+        {/* Left Pane: Problem Statement & Instructions (Resizable) */}
         <div
           style={{
             width: isDesktop ? `${splitPercent}%` : "100%",
@@ -487,7 +472,7 @@ export default function Round2Page() {
           }}
           className="overflow-hidden flex flex-col shrink-0 min-w-0"
         >
-          <DiamondProblemPane round={2} />
+          <AirportProblemPane round={3} />
         </div>
 
         {/* Resizable Splitter Handle between Question Panel and Editor */}
@@ -506,12 +491,10 @@ export default function Round2Page() {
               : "Drag vertically to resize Question and Editor panels"
           }
         >
-          {/* Cyber Grip Dots */}
+          {/* Splitter Grip indicator */}
           <div
-            className={`rounded-full bg-neutral-700/80 group-hover:bg-black group-active:bg-black transition-colors ${
-              isDesktop
-                ? "w-1 h-10 flex flex-col justify-around items-center"
-                : "h-1 w-10 flex justify-around items-center"
+            className={`flex items-center justify-center rounded-full bg-neutral-800 group-hover:bg-white group-active:bg-white transition-all shadow-sm ${
+              isDesktop ? "flex-col gap-1 w-1.5 h-7" : "flex-row gap-1 h-1.5 w-7"
             }`}
           >
             <span className="size-1 rounded-full bg-neutral-400 group-hover:bg-black group-active:bg-black" />
@@ -549,30 +532,18 @@ export default function Round2Page() {
             onAdvanceToNextRound={handleClaimClearance}
             currentHeight={outputHeight}
             onResize={(h) => setOutputHeight(h)}
-            round={2}
+            round={3}
           />
         </div>
       )}
 
-      {/* Cyber Master Key Unlock Animation Modal */}
-      {revealedDigits && (
-        <KeyUnlockAnimationModal
-          isOpen={isUnlockModalOpen}
-          digits={revealedDigits}
-          maskedMasterCode={activeTeam.master_code || "7*********"}
-          onSettled={() => {
-            setIsKeySettled(true);
-            setIsKeyHighlighted(true);
-          }}
-          onComplete={() => {
-            setIsUnlockModalOpen(false);
-            setIsKeySettled(true);
-            setIsKeyHighlighted(true);
-            // Seamlessly transition team into Round 3 arena
-            router.replace("/level3");
-          }}
-        />
-      )}
+      {/* Round 3 Unlock Celebration Modal */}
+      <Round3UnlockModal
+        isOpen={isUnlockModalOpen}
+        digits={revealedDigits || ["8", "4", "2"]}
+        maskedMasterCode={activeTeam.master_code || "763842****"}
+        onComplete={() => setIsUnlockModalOpen(false)}
+      />
     </div>
   );
 }
