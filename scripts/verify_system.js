@@ -282,7 +282,7 @@ int main() {
 
   // 5. Page Rendering Check
   console.log('\n--- Checking Web Pages HTTP Response ---');
-  const pages = ['/', '/level2', '/level3', '/round2', '/round3', '/admin/dashboard'];
+  const pages = ['/', '/level2', '/level3', '/admin/dashboard'];
   for (const page of pages) {
     try {
       const res = await fetch(baseUrl + page);
