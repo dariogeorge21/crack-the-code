@@ -3,9 +3,18 @@ import { getAdminSupabase, isSupabaseConfigured, getLocalTeams, extractLevelSpli
 import { Team } from "@/types";
 import { formatDuration } from "@/lib/time";
 import { computeMaskedMasterCode } from "@/lib/code-masking";
+import { verifyAdminAuth } from "@/lib/auth/admin";
 
 export async function GET() {
   try {
+    const isAuthorized = await verifyAdminAuth();
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { error: "Unauthorized: Admin session required" },
+        { status: 401 }
+      );
+    }
+
     let teams: Team[] = [];
 
     if (isSupabaseConfigured()) {

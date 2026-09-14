@@ -48,8 +48,12 @@ export default function Level3Page() {
     revealedDigits,
     isUnlockModalOpen,
     setIsUnlockModalOpen,
+    isKeyHighlighted,
+    isKeyRevealedInHeader,
     handleRunCode,
     handleClaimClearance,
+    handleModalSettled,
+    handleModalComplete,
   } = useLevel3Compiler({ activeTeam, setActiveTeam });
 
   // 1. Loading screen during biometric / session verification
@@ -71,12 +75,16 @@ export default function Level3Page() {
         currentLevel={activeTeam.current_level}
         masterCode={activeTeam.master_code}
         elapsedSeconds={elapsedSeconds}
+        isKeyRevealedInHeader={isKeyRevealedInHeader}
+        isKeyHighlighted={isKeyHighlighted}
       />
 
       {/* Mobile Master Key Bar (< sm screens) */}
       <Level3MobileHud
         masterCode={activeTeam.master_code}
         currentLevel={activeTeam.current_level}
+        isKeyRevealedInHeader={isKeyRevealedInHeader}
+        isKeyHighlighted={isKeyHighlighted}
       />
 
       {/* Clearance Success Toast Banner */}
@@ -128,9 +136,9 @@ export default function Level3Page() {
         isOpen={isUnlockModalOpen}
         digits={revealedDigits || ["8", "4", "2"]}
         maskedMasterCode={activeTeam.master_code || "763842****"}
-        onComplete={() => setIsUnlockModalOpen(false)}
+        onComplete={handleModalComplete}
+        onSettled={handleModalSettled}
       />
     </div>
   );
 }
-

@@ -146,6 +146,10 @@ export function useAdminDashboard() {
     try {
       if (isManual) setLoading(true);
       const res = await fetch("/api/admin/teams");
+      if (res.status === 401) {
+        setIsAuthenticated(false);
+        return;
+      }
       const data = await res.json();
       if (data?.teams) {
         setTeams(data.teams);
@@ -271,6 +275,11 @@ export function useAdminDashboard() {
     setIsGenerating(true);
     try {
       const res = await fetch("/api/admin/generate-teams", { method: "POST" });
+      if (res.status === 401) {
+        setIsAuthenticated(false);
+        showToast("Session expired. Please log in again.", "warning");
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         showToast("11 Teams & 3-digit access codes generated", "success");
@@ -290,6 +299,11 @@ export function useAdminDashboard() {
     setIsResetting(true);
     try {
       const res = await fetch("/api/admin/reset-game", { method: "POST" });
+      if (res.status === 401) {
+        setIsAuthenticated(false);
+        showToast("Session expired. Please log in again.", "warning");
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setShowResetModal(false);

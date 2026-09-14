@@ -1,4 +1,11 @@
 import { NextResponse } from "next/server";
+import {
+  ADMIN_COOKIE_NAME,
+  signAdminToken,
+  verifyAdminAuth,
+  timingSafeStringCompare,
+  getAdminCookieOptions,
+} from "@/lib/auth/admin";
 
 interface AdminRateLimitState {
   failedAttempts: number;
@@ -8,31 +15,56 @@ interface AdminRateLimitState {
 
 declare global {
   // eslint-disable-next-line no-var
-  var __ADMIN_AUTH_RATE_LIMIT: AdminRateLimitState | undefined;
+  var __ADMIN_AUTH_RATE_LIMITS: Map<string, AdminRateLimitState> | undefined;
 }
 
 const MAX_FAILED_ATTEMPTS = 5;
 const BASE_LOCKOUT_MS = 5 * 60 * 1000; // 5 minutes in ms (300,000 ms)
 
-function getRateLimitState(): AdminRateLimitState {
-  if (!globalThis.__ADMIN_AUTH_RATE_LIMIT) {
-    globalThis.__ADMIN_AUTH_RATE_LIMIT = {
+function getClientIp(req: Request): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) {
+    return forwarded.split(",")[0].trim();
+  }
+  return req.headers.get("x-real-ip") || "127.0.0.1";
+}
+
+function getRateLimitState(ip: string): AdminRateLimitState {
+  if (!globalThis.__ADMIN_AUTH_RATE_LIMITS) {
+    globalThis.__ADMIN_AUTH_RATE_LIMITS = new Map();
+  }
+  let state = globalThis.__ADMIN_AUTH_RATE_LIMITS.get(ip);
+  if (!state) {
+    state = {
       failedAttempts: 0,
       lockoutCount: 0,
       lockoutUntil: 0,
     };
+    globalThis.__ADMIN_AUTH_RATE_LIMITS.set(ip, state);
   }
-  return globalThis.__ADMIN_AUTH_RATE_LIMIT;
+  return state;
 }
 
-// GET: Query current lockout status and attempts remaining
-export async function GET() {
-  const state = getRateLimitState();
+// GET: Query current session auth status & IP lockout status
+export async function GET(req: Request) {
+  const isAuthenticated = await verifyAdminAuth();
+  if (isAuthenticated) {
+    return NextResponse.json({
+      authenticated: true,
+      lockedOut: false,
+      remainingSeconds: 0,
+      attemptsRemaining: MAX_FAILED_ATTEMPTS,
+    });
+  }
+
+  const ip = getClientIp(req);
+  const state = getRateLimitState(ip);
   const now = Date.now();
 
   if (state.lockoutUntil > now) {
     const remainingSeconds = Math.ceil((state.lockoutUntil - now) / 1000);
     return NextResponse.json({
+      authenticated: false,
       lockedOut: true,
       remainingSeconds,
       lockoutMinutes: Math.ceil(remainingSeconds / 60),
@@ -41,17 +73,18 @@ export async function GET() {
   }
 
   return NextResponse.json({
+    authenticated: false,
     lockedOut: false,
     remainingSeconds: 0,
     attemptsRemaining: Math.max(0, MAX_FAILED_ATTEMPTS - state.failedAttempts),
   });
 }
 
-// POST: Authenticate admin password with exponential lockout
+// POST: Authenticate admin password with timing-safe comparison and set HttpOnly session cookie
 export async function POST(req: Request) {
   try {
-    const { password } = await req.json();
-    const state = getRateLimitState();
+    const ip = getClientIp(req);
+    const state = getRateLimitState(ip);
     const now = Date.now();
 
     // 1. Check if currently in lockout period
@@ -69,20 +102,36 @@ export async function POST(req: Request) {
       );
     }
 
+    const { password } = await req.json();
     const expectedPassword = process.env.ADMIN_PASSWORD || "csea1to4";
 
-    // 2. Validate Password
-    if (password && typeof password === "string" && password.trim() === expectedPassword) {
-      // SUCCESS: Reset all lockout states
+    // 2. Validate Password with Timing-Safe Comparison
+    const isValid =
+      typeof password === "string" &&
+      timingSafeStringCompare(password.trim(), expectedPassword);
+
+    if (isValid) {
+      // SUCCESS: Reset lockout state for this IP
       state.failedAttempts = 0;
       state.lockoutCount = 0;
       state.lockoutUntil = 0;
 
-      return NextResponse.json({
+      // Create signed session token
+      const sessionToken = signAdminToken();
+
+      const response = NextResponse.json({
         success: true,
         role: "admin",
-        token: "admin_authorized_asthra_session",
       });
+
+      // Set tamper-proof HttpOnly session cookie
+      response.cookies.set(
+        ADMIN_COOKIE_NAME,
+        sessionToken,
+        getAdminCookieOptions()
+      );
+
+      return response;
     }
 
     // 3. FAILED ATTEMPT: Increment counter
@@ -90,17 +139,13 @@ export async function POST(req: Request) {
 
     if (state.failedAttempts >= MAX_FAILED_ATTEMPTS) {
       // Exponential lockout formula: 5m * 2^(lockoutCount)
-      // 1st lockout: 5m (300s)
-      // 2nd lockout: 10m (600s)
-      // 3rd lockout: 20m (1200s)
-      // 4th lockout: 40m (2400s)
       const currentMultiplier = Math.pow(2, state.lockoutCount);
       const lockoutDurationMs = BASE_LOCKOUT_MS * currentMultiplier;
       const lockoutDurationMins = 5 * currentMultiplier;
 
       state.lockoutUntil = now + lockoutDurationMs;
       state.lockoutCount += 1;
-      state.failedAttempts = 0; // reset attempts for after lockout expires
+      state.failedAttempts = 0;
 
       return NextResponse.json(
         {

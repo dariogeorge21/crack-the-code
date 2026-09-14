@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 import { getAdminSupabase, isSupabaseConfigured, triggerLocalReset } from "@/lib/supabase";
 import { TOTAL_TEAMS } from "@/constants";
+import { verifyAdminAuth } from "@/lib/auth/admin";
 
 export async function POST() {
   try {
+    const isAuthorized = await verifyAdminAuth();
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { error: "Unauthorized: Admin session required" },
+        { status: 401 }
+      );
+    }
+
     const now = new Date().toISOString();
 
     if (isSupabaseConfigured()) {
