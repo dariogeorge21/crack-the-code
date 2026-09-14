@@ -50,6 +50,20 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Team not found" }, { status: 404 });
       }
 
+      // Prevent state downgrade or master code tampering if Round 1 is already cleared
+      if (existingTeam.current_level >= 2 && existingTeam.master_code) {
+        const maskedMasterCode = existingTeam.master_code.slice(0, 1) + "*********";
+        const safeTeam = { ...existingTeam, master_code: maskedMasterCode };
+        return NextResponse.json({
+          success: true,
+          currentLevel: existingTeam.current_level,
+          levelCleared: true,
+          maskedMasterCode,
+          team: safeTeam,
+          serverTime: now,
+        });
+      }
+
       // START TIMER HERE: Set started_at only when master key is generated!
       const startedAt = existingTeam.started_at || now;
 
@@ -95,6 +109,20 @@ export async function POST(req: Request) {
 
       if (!team) {
         return NextResponse.json({ error: "Team not found" }, { status: 404 });
+      }
+
+      // Prevent state downgrade or master code tampering if Round 1 is already cleared
+      if (team.current_level >= 2 && team.master_code) {
+        const maskedMasterCode = team.master_code.slice(0, 1) + "*********";
+        const safeTeam = { ...team, master_code: maskedMasterCode };
+        return NextResponse.json({
+          success: true,
+          currentLevel: team.current_level,
+          levelCleared: true,
+          maskedMasterCode,
+          team: safeTeam,
+          serverTime: now,
+        });
       }
 
       // START TIMER HERE: Set started_at only when master key is generated!

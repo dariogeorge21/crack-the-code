@@ -16,6 +16,9 @@ export function computeMaskedMasterCode(
   const full = masterCode || (firstDigit !== null && firstDigit !== undefined ? `${firstDigit}${"0".repeat(MASTER_CODE_LENGTH - 1)}` : "");
   if (!full) return null;
 
+  if (currentLevel >= 5) {
+    return full.slice(0, 10);
+  }
   if (currentLevel >= 4) {
     return full.slice(0, 6) + "****";
   }

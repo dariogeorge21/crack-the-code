@@ -189,6 +189,17 @@ export function LevelCard({ round }: LevelCardProps) {
                 </Link>
               </div>
             )}
+            {round.number === 4 && (
+              <div className="mt-3 pt-2 border-t border-neutral-800">
+                <Link
+                  href="/round4"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-400 hover:bg-white text-black font-black uppercase text-[11px] tracking-wider transition-colors shadow-[2px_2px_0px_0px_#ffffff]"
+                >
+                  <TerminalWindow weight="bold" className="size-3.5" />
+                  <span>ACCESS ROUND 04 ARENA</span>
+                </Link>
+              </div>
+            )}
           </div>
         )}
 

@@ -7,19 +7,22 @@ export function extractLevelSplits(rawAnswer: string | null | undefined): {
   cleanAnswer: string | null;
   completedLevel2At: string | null;
   completedLevel3At: string | null;
+  completedLevel4At: string | null;
 } {
-  if (!rawAnswer) return { cleanAnswer: null, completedLevel2At: null, completedLevel3At: null };
+  if (!rawAnswer) return { cleanAnswer: null, completedLevel2At: null, completedLevel3At: null, completedLevel4At: null };
   const l2Match = rawAnswer.match(/\[L2:([^\]]+)\]/);
   const l3Match = rawAnswer.match(/\[L3:([^\]]+)\]/);
+  const l4Match = rawAnswer.match(/\[L4:([^\]]+)\]/);
   const cleanAnswer = rawAnswer.replace(/\[L\d:[^\]]+\]/g, "").trim() || null;
   return {
     cleanAnswer,
     completedLevel2At: l2Match ? l2Match[1] : null,
     completedLevel3At: l3Match ? l3Match[1] : null,
+    completedLevel4At: l4Match ? l4Match[1] : null,
   };
 }
 
-export function appendLevelSplit(rawAnswer: string | null | undefined, level: 2 | 3, timestamp: string): string {
+export function appendLevelSplit(rawAnswer: string | null | undefined, level: 2 | 3 | 4, timestamp: string): string {
   const current = rawAnswer || "";
   const tag = `[L${level}:${timestamp}]`;
   const regex = new RegExp(`\\[L${level}:[^\\]]+\\]`);
@@ -128,6 +131,7 @@ export const triggerLocalReset = (): string => {
     t.completed_level1_at = null;
     t.completed_level2_at = null;
     t.completed_level3_at = null;
+    t.completed_level4_at = null;
   });
   return newTime;
 };

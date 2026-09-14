@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminSupabase, isSupabaseConfigured, setLocalTeams } from "@/lib/supabase";
 import { Team } from "@/types";
 import { TOTAL_TEAMS } from "@/constants";
+import { verifyAdminAuth } from "@/lib/auth/admin";
 
 function generateUnique3DigitCodes(count: number): string[] {
   const codes = new Set<string>();
@@ -15,6 +16,14 @@ function generateUnique3DigitCodes(count: number): string[] {
 
 export async function POST() {
   try {
+    const isAuthorized = await verifyAdminAuth();
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { error: "Unauthorized: Admin session required" },
+        { status: 401 }
+      );
+    }
+
     const codes = generateUnique3DigitCodes(TOTAL_TEAMS);
     const updatedTeams: Team[] = [];
 

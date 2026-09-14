@@ -37,7 +37,11 @@ export function MasterKeyHud({
   for (let i = 0; i < totalSlots; i++) {
     const char = masterCode[i] || "*";
     const isUnlocked = char !== "*" && i < unlockedCount;
-    const isNew = highlightNewDigits && (i === 1 || i === 2);
+    const isNew = highlightNewDigits && (
+      (unlockedCount === 10 && i >= 6) ||
+      (unlockedCount === 6 && i >= 3 && i <= 5) ||
+      (unlockedCount === 3 && (i === 1 || i === 2))
+    );
     slots.push({ char: isUnlocked ? char : "*", isUnlocked, isNew });
   }
 

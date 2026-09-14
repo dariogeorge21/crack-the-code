@@ -226,6 +226,8 @@ export default function Round3Page() {
           });
           const submitData = await submitRes.json();
           if (submitRes.ok && submitData.success) {
+            localStorage.setItem(SESSION_STORAGE_KEY, activeTeam.team_code);
+            sessionStorage.setItem(SESSION_STORAGE_KEY, activeTeam.team_code);
             setActiveTeam((prev) =>
               prev
                 ? {
@@ -279,6 +281,8 @@ export default function Round3Page() {
       });
       const submitData = await submitRes.json();
       if (submitRes.ok && submitData.success) {
+        localStorage.setItem(SESSION_STORAGE_KEY, activeTeam.team_code);
+        sessionStorage.setItem(SESSION_STORAGE_KEY, activeTeam.team_code);
         setActiveTeam((prev) =>
           prev
             ? {
@@ -542,7 +546,10 @@ export default function Round3Page() {
         isOpen={isUnlockModalOpen}
         digits={revealedDigits || ["8", "4", "2"]}
         maskedMasterCode={activeTeam.master_code || "763842****"}
-        onComplete={() => setIsUnlockModalOpen(false)}
+        onComplete={() => {
+          setIsUnlockModalOpen(false);
+          router.push("/round4");
+        }}
       />
     </div>
   );

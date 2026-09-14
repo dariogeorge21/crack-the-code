@@ -8,6 +8,7 @@ export interface AdminTeamData {
   completed_level1_at: string | null;
   completed_level2_at?: string | null;
   completed_level3_at?: string | null;
+  completed_level4_at?: string | null;
   masked_master_code?: string | null;
   time_taken_seconds: number | null;
   time_taken_formatted: string;
@@ -23,6 +24,10 @@ export interface AdminTeamData {
   l3_time_formatted?: string | null;
   l3_total_seconds?: number | null;
   l3_total_formatted?: string | null;
+  l4_time_seconds?: number | null;
+  l4_time_formatted?: string | null;
+  l4_total_seconds?: number | null;
+  l4_total_formatted?: string | null;
   round1_answer: string | null;
   first_digit: number | null;
   master_code: string | null;
