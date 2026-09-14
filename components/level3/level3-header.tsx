@@ -10,6 +10,8 @@ interface Level3HeaderProps {
   currentLevel: number;
   masterCode: string | null;
   elapsedSeconds: number;
+  isKeyRevealedInHeader?: boolean;
+  isKeyHighlighted?: boolean;
 }
 
 export function Level3Header({
@@ -17,8 +19,11 @@ export function Level3Header({
   currentLevel,
   masterCode,
   elapsedSeconds,
+  isKeyRevealedInHeader,
+  isKeyHighlighted,
 }: Level3HeaderProps) {
-  const unlockedCount = currentLevel >= 4 ? 6 : 3;
+  const unlockedCount =
+    currentLevel >= 4 || isKeyRevealedInHeader ? 6 : 3;
   const tierLabel = currentLevel >= 4 ? "CLEARED" : "TIER 03";
 
   return (
@@ -61,6 +66,7 @@ export function Level3Header({
         <MasterKeyHud
           masterCode={masterCode}
           unlockedCount={unlockedCount}
+          highlightNewDigits={isKeyHighlighted}
           size="sm"
           className="hidden sm:flex"
         />

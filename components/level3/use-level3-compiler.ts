@@ -159,6 +159,8 @@ export function useLevel3Compiler({
             : null
         );
         setRevealedDigits(submitData.revealedDigits);
+        setIsKeySettled(false);
+        setIsKeyHighlighted(false);
         setClearedBanner(true);
         setIsUnlockModalOpen(true);
       }
@@ -166,6 +168,26 @@ export function useLevel3Compiler({
       console.error("Round 3 clearance submit error:", submitErr);
     }
   }, [activeTeam, revealedDigits, setActiveTeam]);
+
+  // Key reveal and highlight animation states matching Round 2
+  const [isKeySettled, setIsKeySettled] = useState<boolean>(false);
+  const [isKeyHighlighted, setIsKeyHighlighted] = useState<boolean>(false);
+
+  const handleModalSettled = useCallback(() => {
+    setIsKeySettled(true);
+    setIsKeyHighlighted(true);
+  }, []);
+
+  const handleModalComplete = useCallback(() => {
+    setIsUnlockModalOpen(false);
+    setIsKeySettled(true);
+    setIsKeyHighlighted(true);
+  }, []);
+
+  const isKeyRevealedInHeader = Boolean(
+    (activeTeam && activeTeam.current_level >= 4 && !isUnlockModalOpen) ||
+    isKeySettled
+  );
 
   const toggleDrawer = useCallback(() => {
     setIsDrawerOpen((prev) => !prev);
@@ -188,8 +210,14 @@ export function useLevel3Compiler({
     revealedDigits,
     isUnlockModalOpen,
     setIsUnlockModalOpen,
+    isKeyHighlighted,
+    isKeySettled,
+    isKeyRevealedInHeader,
     handleRunCode,
     handleClaimClearance,
+    handleModalSettled,
+    handleModalComplete,
   };
 }
+
 
