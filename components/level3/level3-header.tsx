@@ -19,7 +19,7 @@ export function Level3Header({
   elapsedSeconds,
 }: Level3HeaderProps) {
   const unlockedCount = currentLevel >= 4 ? 6 : 3;
-  const tierLabel = currentLevel >= 4 ? "TIER 04" : "TIER 03";
+  const tierLabel = currentLevel >= 4 ? "CLEARED" : "TIER 03";
 
   return (
     <header className="h-14 border-b border-neutral-800 bg-[#0a0a0e] px-3 sm:px-4 flex items-center justify-between gap-2 shrink-0 z-40 font-mono">

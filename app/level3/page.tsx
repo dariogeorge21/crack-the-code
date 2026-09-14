@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
 import {
   AirportProblemPane,
   LeetCodeEditorPane,
@@ -21,8 +20,6 @@ import {
 import { useMissionTimer, usePreventBack } from "@/hooks";
 
 export default function Level3Page() {
-  const router = useRouter();
-
   // Trap back navigation in the active arena
   usePreventBack();
 
@@ -131,10 +128,7 @@ export default function Level3Page() {
         isOpen={isUnlockModalOpen}
         digits={revealedDigits || ["8", "4", "2"]}
         maskedMasterCode={activeTeam.master_code || "763842****"}
-        onComplete={() => {
-          setIsUnlockModalOpen(false);
-          router.push("/round4");
-        }}
+        onComplete={() => setIsUnlockModalOpen(false)}
       />
     </div>
   );

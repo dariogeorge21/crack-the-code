@@ -256,16 +256,7 @@ int main() {
       data = await res.json();
       assert(res.status === 200 && data.success && data.currentLevel >= 4, 'POST /api/game/submit-round3 advances team to Level 4');
 
-      // Step G: Submit Round 4 CTF Flag
-      res = await fetch(baseUrl + '/api/game/submit-round4', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teamCode: testTeamCode, flag: 'FLAG{alex_left_more_than_a_message}' })
-      });
-      data = await res.json();
-      assert(res.status === 200 && data.success && data.gameWon === true, 'POST /api/game/submit-round4 validates CTF Flag and declares team Winner (gameWon: true)');
-
-      // Step H: Anti-Downgrade Test: Resubmitting Round 1 does NOT downgrade Level 4 winner
+      // Step G: Anti-Downgrade Test: Resubmitting Round 1 does NOT downgrade cleared team
       res = await fetch(baseUrl + '/api/game/submit-round1', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -278,7 +269,7 @@ int main() {
       data = await res.json();
       assert(res.status === 200 && data.currentLevel >= 4, 'Level 1 Anti-Downgrade protection preserves team level');
 
-      // Step I: Leaderboard Check
+      // Step H: Leaderboard Check
       res = await fetch(baseUrl + '/api/game/leaderboard');
       data = await res.json();
       const top = data.leaderboard && data.leaderboard[0];
@@ -291,7 +282,7 @@ int main() {
 
   // 5. Page Rendering Check
   console.log('\n--- Checking Web Pages HTTP Response ---');
-  const pages = ['/', '/level2', '/level3', '/level4', '/round2', '/round3', '/round4', '/admin/dashboard'];
+  const pages = ['/', '/level2', '/level3', '/round2', '/round3', '/admin/dashboard'];
   for (const page of pages) {
     try {
       const res = await fetch(baseUrl + page);

@@ -6,6 +6,7 @@ import {
   Key,
   ArrowRight,
   Diamond,
+  X,
 } from "@phosphor-icons/react";
 
 interface Round3UnlockModalProps {
@@ -55,9 +56,19 @@ export function Round3UnlockModal({
               [CENTRAL COMMAND // LEVEL 03 OVERRIDE ACCEPTED]
             </span>
           </div>
-          <span className="px-2 py-0.5 bg-emerald-950/80 border border-emerald-500/60 text-emerald-400 font-bold text-[10px] tracking-wider">
-            ROUND 03 CLEARED
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-0.5 bg-emerald-950/80 border border-emerald-500/60 text-emerald-400 font-bold text-[10px] tracking-wider">
+              ROUND 03 CLEARED
+            </span>
+            <button
+              type="button"
+              onClick={onComplete}
+              className="text-neutral-400 hover:text-white p-1 transition-colors cursor-pointer"
+              title="Close modal"
+            >
+              <X weight="bold" className="size-4" />
+            </button>
+          </div>
         </div>
 
         {/* Center Stage: 3 Revealed Digits */}

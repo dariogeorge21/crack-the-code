@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getSupabase, isSupabaseConfigured, getLocalTeams, extractLevelSplits } from "@/lib/supabase";
 import { formatDuration } from "@/lib/time";
 import { Team } from "@/types";
@@ -20,16 +20,14 @@ export async function GET() {
     }
 
     const leaderboard = teams.map((team) => {
-      const { completedLevel2At, completedLevel3At, completedLevel4At } = extractLevelSplits(team.round1_answer);
+      const { completedLevel2At, completedLevel3At } = extractLevelSplits(team.round1_answer);
       const effectiveL2At = team.completed_level2_at || completedLevel2At || null;
       const effectiveL3At = team.completed_level3_at || completedLevel3At || null;
-      const effectiveL4At = team.completed_level4_at || completedLevel4At || null;
 
       let totalSeconds: number | null = null;
       let l1Seconds: number | null = null;
       let l2Seconds: number | null = null;
       let l3Seconds: number | null = null;
-      let l4Seconds: number | null = null;
 
       if (team.started_at) {
         const startMs = new Date(team.started_at).getTime();
@@ -42,18 +40,15 @@ export async function GET() {
         if (effectiveL3At && effectiveL2At) {
           l3Seconds = Math.max(0, Math.floor((new Date(effectiveL3At).getTime() - new Date(effectiveL2At).getTime()) / 1000));
         }
-        if (effectiveL4At && effectiveL3At) {
-          l4Seconds = Math.max(0, Math.floor((new Date(effectiveL4At).getTime() - new Date(effectiveL3At).getTime()) / 1000));
-        }
 
-        if (effectiveL4At || team.current_level >= 5) {
-          totalSeconds = (l1Seconds || 0) + (l2Seconds || 0) + (l3Seconds || 0) + (l4Seconds || 0);
+        if (effectiveL3At || team.current_level >= 4) {
+          totalSeconds = (l1Seconds || 0) + (l2Seconds || 0) + (l3Seconds || 0);
         } else {
           totalSeconds = Math.max(0, Math.floor((Date.now() - startMs) / 1000));
         }
       }
 
-      const isWinner = team.current_level >= 5 || Boolean(effectiveL4At);
+      const isWinner = team.current_level >= 4 || Boolean(effectiveL3At);
 
       return {
         id: team.id,
@@ -66,7 +61,6 @@ export async function GET() {
         l1_formatted: l1Seconds !== null ? formatDuration(l1Seconds) : null,
         l2_formatted: l2Seconds !== null ? formatDuration(l2Seconds) : null,
         l3_formatted: l3Seconds !== null ? formatDuration(l3Seconds) : null,
-        l4_formatted: l4Seconds !== null ? formatDuration(l4Seconds) : null,
       };
     });
 

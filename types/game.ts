@@ -11,7 +11,6 @@ export interface Team {
   completed_level1_at: string | null;
   completed_level2_at?: string | null;
   completed_level3_at?: string | null;
-  completed_level4_at?: string | null;
   created_at?: string;
   updated_at?: string;
 }

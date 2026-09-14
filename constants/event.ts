@@ -81,22 +81,21 @@ export const EVENT_DATA = {
     {
       number: 4,
       code: "L4",
-      name: "MINI CTF: THE MISSING RESEARCHER",
-      subtitle: "Digital Forensics & Steganography",
+      name: "FINAL LOCK",
+      subtitle: "Expert Level Problem Statement",
       description:
-        "Dr. Alex Thomas, a cybersecurity researcher, has disappeared, leaving behind 5 files in a shared folder. Investigate the recovered evidence across 5 forensic stages (EXIF metadata, LSB steganography, OpenXML ZIP structure, hidden PDF text, and optical QR scan) to recover the master flag and breach the final lock!",
+        "Expert level problem statement. The final and most challenging round that combines multiple skills. Unlock the last lock and claim victory!",
       detailedMechanic:
-        "Multi-stage digital forensics: Extract hidden ciphers from photo.jpg, meeting.png, report.docx, notes.pdf, and evidence.png to unlock the final 4 Master Key digits and win the championship.",
+        "Multi-tiered system breach: Synthesize multi-source telemetry, construct a full exploit script, and crack the master cryptographic lock.",
       example_ideas: [
-        "EXIF metadata inspection and hex decoding",
-        "Least Significant Bit (LSB) image steganography",
-        "OpenXML DOCX archive deconstruction & XML parsing",
-        "Hidden white-on-white text layer recovery in PDF",
-        "Workstation artifact inspection & optical QR decode",
+        "Multi-step challenge combining previous rounds",
+        "A real-world inspired problem",
+        "Identify clues from multiple sources",
+        "A final puzzle to unlock the system",
       ],
-      feedback_prompt: "YOUR THOUGHTS?",
+      feedback_prompt: "YOUR SUGGESTIONS?",
       isUnlockedInitially: false,
-      accentColor: "#F59E0B",
+      accentColor: "#FF4500",
     },
   ] as RoundData[],
 

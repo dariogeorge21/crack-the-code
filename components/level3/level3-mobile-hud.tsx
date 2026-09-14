@@ -13,7 +13,7 @@ export function Level3MobileHud({
   currentLevel,
 }: Level3MobileHudProps) {
   const unlockedCount = currentLevel >= 4 ? 6 : 3;
-  const tierLabel = currentLevel >= 4 ? "TIER 04" : "TIER 03";
+  const tierLabel = currentLevel >= 4 ? "CLEARED" : "TIER 03";
 
   return (
     <div className="sm:hidden bg-[#09090d] border-b border-neutral-800 px-4 py-1.5 flex items-center justify-between text-xs font-mono">

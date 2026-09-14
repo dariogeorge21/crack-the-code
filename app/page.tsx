@@ -10,7 +10,7 @@ import { Team } from "@/types";
 import { SESSION_STORAGE_KEY } from "@/constants";
 import { useMissionTimer } from "@/hooks";
 import { formatDuration } from "@/lib/time";
-import { Timer, Play, Code, Trophy } from "@phosphor-icons/react";
+import { Timer, Play, Code } from "@phosphor-icons/react";
 
 export default function Home() {
   const router = useRouter();
@@ -88,9 +88,7 @@ export default function Home() {
   const handleTeamVerified = (team: Team) => {
     setActiveTeam(team);
     localStorage.setItem(SESSION_STORAGE_KEY, team.team_code);
-    if (team.current_level >= 4) {
-      router.replace("/round4");
-    } else if (team.current_level >= 3) {
+    if (team.current_level >= 3) {
       router.replace("/level3");
     } else if (team.current_level >= 2) {
       router.replace("/level2");
@@ -110,9 +108,7 @@ export default function Home() {
   const handleProgressToLevel2 = () => {
     setIsRound1ModalOpen(false);
     setStatusNotification("LEVEL 01 CLEARED // REDIRECTING TO ROUND 02: CODE ARENA");
-    if (activeTeam && activeTeam.current_level >= 4) {
-      router.replace("/round4");
-    } else if (activeTeam && activeTeam.current_level >= 3) {
+    if (activeTeam && activeTeam.current_level >= 3) {
       router.replace("/level3");
     } else {
       router.replace("/level2");
@@ -212,15 +208,7 @@ export default function Home() {
               {/* Action Buttons */}
               <div className="flex items-center gap-2 shrink-0 ml-auto xl:ml-0">
                 {/* Current Stage Primary Action Button */}
-                {activeTeam.current_level >= 4 ? (
-                  <Link
-                    href="/round4"
-                    className="px-3.5 py-2 bg-amber-400 hover:bg-white text-black font-black uppercase text-xs tracking-wider transition-all cursor-pointer shadow-[3px_3px_0px_0px_#ffffff] flex items-center gap-1.5 whitespace-nowrap active:translate-y-0.5"
-                  >
-                    <Trophy weight="bold" className="size-3.5" />
-                    <span>ROUND 4 ARENA</span>
-                  </Link>
-                ) : activeTeam.current_level >= 3 ? (
+                {activeTeam.current_level >= 3 ? (
                   <Link
                     href="/level3"
                     className="px-3.5 py-2 bg-[#ff5500] hover:bg-white text-black font-black uppercase text-xs tracking-wider transition-all cursor-pointer shadow-[3px_3px_0px_0px_#ffffff] flex items-center gap-1.5 whitespace-nowrap active:translate-y-0.5"

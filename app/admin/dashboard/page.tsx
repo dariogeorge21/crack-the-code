@@ -646,14 +646,10 @@ export default function AdminDashboardPage() {
 
                 {/* Status Badge */}
                 <td className="p-3.5 whitespace-nowrap">
-                  {t.current_level >= 5 || t.completed_level4_at ? (
+                  {t.current_level >= 4 || t.completed_level3_at ? (
                     <span className="px-2.5 py-1 bg-amber-500/20 text-amber-300 border border-amber-400 text-[10px] font-black tracking-wider flex items-center gap-1.5 shadow-[0_0_12px_rgba(245,158,11,0.3)] animate-pulse">
                       <span>🏆</span>
-                      <span>WINNER / CLEARED</span>
-                    </span>
-                  ) : t.current_level >= 4 ? (
-                    <span className="px-2.5 py-1 bg-purple-950 text-purple-400 border border-purple-500/50 text-[10px] font-bold">
-                      LEVEL 4 IN PROGRESS
+                      <span>CLEARED // FINAL LOCK</span>
                     </span>
                   ) : t.current_level >= 3 ? (
                     <span className="px-2.5 py-1 bg-cyan-950 text-cyan-400 border border-cyan-500/50 text-[10px] font-bold">
@@ -680,8 +676,8 @@ export default function AdminDashboardPage() {
 
                 {/* Tier */}
                 <td className="p-3.5 whitespace-nowrap">
-                  <span className={`font-bold ${t.current_level >= 5 || t.completed_level4_at ? "text-amber-400 font-black" : "text-neutral-200"}`}>
-                    {t.current_level >= 5 || t.completed_level4_at ? "CLEARED" : `Tier 0${t.current_level}`}
+                  <span className={`font-bold ${t.current_level >= 4 || t.completed_level3_at ? "text-amber-400 font-black" : "text-neutral-200"}`}>
+                    {t.current_level >= 4 || t.completed_level3_at ? "CLEARED" : `Tier 0${t.current_level}`}
                   </span>
                 </td>
 
@@ -690,20 +686,12 @@ export default function AdminDashboardPage() {
                   {t.started_at ? (
                     <div className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-1.5 font-mono font-black text-sm">
-                        {t.current_level >= 5 || t.completed_level4_at ? (
+                        {t.current_level >= 4 || t.completed_level3_at ? (
                           <>
                             <span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block animate-ping" />
                             <span className="text-amber-300 font-black">{t.total_time_formatted || t.time_taken_formatted}</span>
                             <span className="text-[9px] px-1.5 py-0.5 bg-amber-950 border border-amber-500/60 text-amber-300 font-black tracking-wider">
-                              WINNER
-                            </span>
-                          </>
-                        ) : t.current_level === 4 ? (
-                          <>
-                            <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse inline-block" />
-                            <span className="text-purple-300">{getLiveDuration(t.started_at)}</span>
-                            <span className="text-[9px] px-1 py-0.2 bg-purple-950 border border-purple-500/50 text-purple-400 font-bold tracking-wider">
-                              L4 LIVE
+                              CLEARED
                             </span>
                           </>
                         ) : (
@@ -750,18 +738,6 @@ export default function AdminDashboardPage() {
                           <div className="flex items-center gap-1.5 text-purple-400/80">
                             <span className="text-purple-500/70 font-bold">L3:</span>
                             <span className="italic">{getLiveDuration(t.completed_level2_at || null)} (in progress)</span>
-                          </div>
-                        ) : null}
-
-                        {t.l4_time_formatted ? (
-                          <div className="flex items-center gap-1.5 text-emerald-400">
-                            <span className="text-emerald-500 font-bold">L4:</span>
-                            <span className="text-emerald-300 font-bold">{t.l4_time_formatted}</span>
-                          </div>
-                        ) : t.current_level === 4 && (t.completed_level3_at || t.l3_time_formatted) ? (
-                          <div className="flex items-center gap-1.5 text-emerald-400/80">
-                            <span className="text-emerald-500/70 font-bold">L4:</span>
-                            <span className="italic">{getLiveDuration(t.completed_level3_at || null)} (in progress)</span>
                           </div>
                         ) : null}
                       </div>
