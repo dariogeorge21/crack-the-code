@@ -1,27 +1,26 @@
 "use client";
 
-import { sound } from "@/lib/sound";
-import { EVENT_DATA } from "@/lib/event-data";
+import { EVENT_DATA } from "@/constants";
 import { 
   Lock, 
   LockOpen, 
   ArrowDown, 
-  Sparkle, 
   ShieldCheck, 
   Timer, 
   Users,
   Terminal,
-  Cpu
+  Cpu,
+  Play
 } from "@phosphor-icons/react";
 
 interface HeroSectionProps {
-  onOpenIdeasModal: () => void;
+  onOpenIdeasModal?: () => void;
+  onStartGame?: () => void;
 }
 
-export function HeroSection({ onOpenIdeasModal }: HeroSectionProps) {
+export function HeroSection({ onOpenIdeasModal, onStartGame }: HeroSectionProps = {}) {
   const scrollToRounds = (e: React.MouseEvent) => {
     e.preventDefault();
-    sound.playClick(600);
     const element = document.getElementById("rounds");
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
@@ -128,7 +127,7 @@ export function HeroSection({ onOpenIdeasModal }: HeroSectionProps) {
           <div className="p-3 bg-neutral-950/80 border border-neutral-800 flex items-center justify-between opacity-80 hover:opacity-100 hover:border-neutral-500 transition-all">
             <div className="text-left font-mono">
               <span className="text-[10px] text-neutral-500 block">STAGE 02</span>
-              <span className="text-xs font-bold text-neutral-300">L2 LOGIC</span>
+              <span className="text-xs font-bold text-neutral-300">L2 DSA/CODE</span>
             </div>
             <div className="flex items-center gap-1 text-neutral-500">
               <Lock weight="bold" className="size-4" />
@@ -173,13 +172,16 @@ export function HeroSection({ onOpenIdeasModal }: HeroSectionProps) {
           <button
             type="button"
             onClick={() => {
-              sound.playClick(900);
-              onOpenIdeasModal();
+              if (onStartGame) {
+                onStartGame();
+              } else {
+                scrollToRounds({ preventDefault: () => {} } as React.MouseEvent);
+              }
             }}
-            className="w-full sm:w-auto px-8 py-4 bg-neutral-900 border border-neutral-700 hover:border-[#ff5500] text-white hover:text-[#ff5500] font-bold text-sm tracking-widest uppercase transition-all shadow-[4px_4px_0px_0px_#ff5500] flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-8 py-4 bg-neutral-900 border border-neutral-700 hover:border-[#ff5500] text-white hover:text-[#ff5500] font-bold text-sm tracking-widest uppercase transition-all shadow-[4px_4px_0px_0px_#ff5500] flex items-center justify-center gap-2 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
           >
-            <Sparkle weight="bold" className="size-4 text-[#ff5500]" />
-            <span>HELP US BUILD THE ROUNDS</span>
+            <Play weight="bold" className="size-4 text-[#ff5500]" />
+            <span>START GAME</span>
           </button>
         </div>
       </div>

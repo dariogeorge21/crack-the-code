@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { EVENT_DATA } from "@/lib/event-data";
-import { sound } from "@/lib/sound";
+import { EVENT_DATA } from "@/constants";
 import { 
   X, 
   PaperPlaneTilt, 
@@ -21,22 +20,20 @@ interface IdeaSubmissionModalProps {
 
 export function IdeaSubmissionModal({
   isOpen,
-  initialRound,
+  initialRound = 1,
   onClose,
 }: IdeaSubmissionModalProps) {
-  const [selectedRound, setSelectedRound] = useState<number>(initialRound || 1);
+  const [selectedRound, setSelectedRound] = useState<number>(initialRound);
   const [name, setName] = useState("");
   const [college, setCollege] = useState("");
   const [ideaText, setIdeaText] = useState("");
   const [difficulty, setDifficulty] = useState("Medium-Hard");
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submittedCount, setSubmittedCount] = useState(28); // baseline realistic counter
+  const [submittedCount, setSubmittedCount] = useState(0);
 
   useEffect(() => {
-    if (initialRound) {
-      setSelectedRound(initialRound);
-    }
-  }, [initialRound]);
+    setSelectedRound(initialRound);
+  }, [initialRound, isOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -54,7 +51,6 @@ export function IdeaSubmissionModal({
     e.preventDefault();
     if (!ideaText.trim()) return;
 
-    sound.playSuccess();
     setIsSubmitted(true);
     setSubmittedCount((prev) => prev + 1);
 
@@ -76,7 +72,6 @@ export function IdeaSubmissionModal({
   };
 
   const handleResetAndClose = () => {
-    sound.playClick(700);
     setIsSubmitted(false);
     setName("");
     setCollege("");
@@ -157,7 +152,6 @@ export function IdeaSubmissionModal({
                       key={r.number}
                       type="button"
                       onClick={() => {
-                        sound.playClick(800 + r.number * 40);
                         setSelectedRound(r.number);
                       }}
                       className={`p-2 text-left border text-xs font-mono transition-all ${
@@ -213,7 +207,6 @@ export function IdeaSubmissionModal({
                       key={lvl}
                       type="button"
                       onClick={() => {
-                        sound.playClick(850);
                         setDifficulty(lvl);
                       }}
                       className={`flex-1 py-1.5 px-2 text-[11px] border font-mono transition-all ${

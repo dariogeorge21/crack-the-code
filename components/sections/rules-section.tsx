@@ -1,7 +1,6 @@
 "use client";
 
-import { EVENT_DATA } from "@/lib/event-data";
-import { sound } from "@/lib/sound";
+import { EVENT_DATA } from "@/constants";
 import { 
   ShieldCheck, 
   Clock, 
@@ -80,7 +79,6 @@ export function RulesSection() {
           {EVENT_DATA.rules.map((rule, idx) => (
             <div
               key={rule.id}
-              onMouseEnter={() => sound.playClick(1000 + idx * 30)}
               className={`p-5 rounded-none border flex flex-col justify-between transition-all duration-300 font-mono ${
                 rule.critical
                   ? "bg-neutral-950 border-red-500/50 hover:border-red-500 hover:shadow-[4px_4px_0px_0px_#ef4444]"

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { EVENT_DATA, Coordinator } from "@/lib/event-data";
-import { sound } from "@/lib/sound";
+import { EVENT_DATA } from "@/constants";
+import { Coordinator } from "@/types";
 import { 
   PhoneCall, 
   Copy, 
@@ -18,7 +18,6 @@ export function CoordinatorsSection() {
   const [copiedName, setCopiedName] = useState<string | null>(null);
 
   const handleCopyPhone = (person: Coordinator) => {
-    sound.playClick(900);
     navigator.clipboard.writeText(person.phone);
     setCopiedName(person.name);
     setTimeout(() => {
@@ -129,7 +128,6 @@ export function CoordinatorsSection() {
               <div className="mt-8 pt-4 border-t border-neutral-900 grid grid-cols-2 gap-3 font-mono text-xs">
                 <a
                   href={`tel:${coordinator.phone.replace(/\s+/g, "")}`}
-                  onClick={() => sound.playClick(1000)}
                   className="py-3 px-4 bg-[#ff5500] hover:bg-white text-black font-black text-center tracking-wider uppercase transition-all shadow-[3px_3px_0px_0px_#ffffff] flex items-center justify-center gap-2"
                 >
                   <PhoneCall weight="bold" className="size-4" />
@@ -138,7 +136,6 @@ export function CoordinatorsSection() {
 
                 <a
                   href={`mailto:${coordinator.email}`}
-                  onClick={() => sound.playClick(800)}
                   className="py-3 px-4 bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 hover:border-neutral-500 text-neutral-200 text-center tracking-wider uppercase transition-all flex items-center justify-center gap-2"
                 >
                   <EnvelopeSimple weight="bold" className="size-4" />

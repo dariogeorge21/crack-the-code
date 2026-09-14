@@ -1,21 +1,17 @@
 "use client";
 
-import { EVENT_DATA } from "@/lib/event-data";
-import { LevelCard } from "@/components/level-card";
-import { sound } from "@/lib/sound";
+import { EVENT_DATA } from "@/constants";
+import { LevelCard } from "./level-card";
 import { 
   LockOpen, 
-  Lock, 
-  Terminal, 
-  WarningCircle,
-  PaperPlaneTilt
+  Lock
 } from "@phosphor-icons/react";
 
 interface RoundsSectionProps {
-  onOpenIdeasModal: (roundNum?: number) => void;
+  onOpenIdeasModal?: (roundNum?: number) => void;
 }
 
-export function RoundsSection({ onOpenIdeasModal }: RoundsSectionProps) {
+export function RoundsSection({ onOpenIdeasModal }: RoundsSectionProps = {}) {
   return (
     <section
       id="rounds"
@@ -59,37 +55,8 @@ export function RoundsSection({ onOpenIdeasModal }: RoundsSectionProps) {
             <LevelCard
               key={round.number}
               round={round}
-              onOpenFeedback={(roundNumber) => onOpenIdeasModal(roundNumber)}
             />
           ))}
-        </div>
-
-        {/* Section Bottom Banner */}
-        <div className="mt-12 p-6 bg-neutral-950 border-2 border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-[#ff5500] flex items-center justify-center text-black font-black">
-              <PaperPlaneTilt weight="bold" className="size-6" />
-            </div>
-            <div>
-              <h4 className="text-sm sm:text-base font-bold text-white uppercase font-mono">
-                HAVE A CHALLENGE IN MIND FOR ANY OF THESE ROUNDS?
-              </h4>
-              <p className="text-xs text-neutral-400 font-mono mt-0.5">
-                Submit your suggestions and help build the ultimate competition experience.
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              sound.playClick(900);
-              onOpenIdeasModal();
-            }}
-            className="w-full sm:w-auto px-6 py-3 bg-[#ff5500] hover:bg-white text-black font-mono font-black text-xs tracking-widest uppercase transition-all shadow-[4px_4px_0px_0px_#ffffff] cursor-pointer"
-          >
-            CONTRIBUTE AN IDEA
-          </button>
         </div>
       </div>
     </section>

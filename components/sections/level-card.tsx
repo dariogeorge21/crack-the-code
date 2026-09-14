@@ -1,26 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { RoundData } from "@/lib/event-data";
-import { sound } from "@/lib/sound";
+import Link from "next/link";
+import { RoundData } from "@/types";
 import { 
   Lock, 
   LockOpen, 
   Key, 
   CheckCircle, 
-  ArrowRight, 
   Lightbulb, 
-  Sparkle,
   Cpu,
-  Warning
+  Warning,
+  TerminalWindow,
 } from "@phosphor-icons/react";
 
 interface LevelCardProps {
   round: RoundData;
-  onOpenFeedback: (roundNumber: number) => void;
+  onOpenFeedback?: (roundNumber: number) => void;
 }
 
-export function LevelCard({ round, onOpenFeedback }: LevelCardProps) {
+export function LevelCard({ round }: LevelCardProps) {
   const isL1 = round.number === 1;
 
   // L1 Interactive unlock tester state
@@ -30,16 +29,13 @@ export function LevelCard({ round, onOpenFeedback }: LevelCardProps) {
   const [isShaking, setIsShaking] = useState<boolean>(false);
 
   const handleDigitPress = (digit: number) => {
-    sound.playClick(850 + digit * 40);
     setDigitInput(digit.toString());
 
     // Single digit code for Level 1 is 7 (or any digit user wants to test)
     if (digit === 7) {
-      sound.playSuccess();
       setIsCracked(true);
       setFeedbackMsg("CORRECT KEY [7] // LEVEL 1 CLEARED!");
     } else {
-      sound.playDenied();
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 500);
       setFeedbackMsg(`TEST KEY [${digit}] REJECTED - TRY KEY 7`);
@@ -59,8 +55,8 @@ export function LevelCard({ round, onOpenFeedback }: LevelCardProps) {
         ROUND 0{round.number} / 04
       </div>
 
-      {/* Card Header */}
-      <div className="p-6 pb-4">
+      {/* Card Body */}
+      <div className="p-6 pb-6">
         {/* Top Badges & Lock State */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -171,6 +167,28 @@ export function LevelCard({ round, onOpenFeedback }: LevelCardProps) {
                 {round.detailedMechanic}
               </p>
             )}
+            {round.number === 2 && (
+              <div className="mt-3 pt-2 border-t border-neutral-800">
+                <Link
+                  href="/level2"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#ff5500] hover:bg-white text-black font-black uppercase text-[11px] tracking-wider transition-colors shadow-[2px_2px_0px_0px_#ffffff]"
+                >
+                  <TerminalWindow weight="bold" className="size-3.5" />
+                  <span>ACCESS ROUND 02 ARENA</span>
+                </Link>
+              </div>
+            )}
+            {round.number === 3 && (
+              <div className="mt-3 pt-2 border-t border-neutral-800">
+                <Link
+                  href="/level3"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#ff5500] hover:bg-white text-black font-black uppercase text-[11px] tracking-wider transition-colors shadow-[2px_2px_0px_0px_#ffffff]"
+                >
+                  <TerminalWindow weight="bold" className="size-3.5" />
+                  <span>ACCESS ROUND 03 ARENA</span>
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
@@ -194,26 +212,6 @@ export function LevelCard({ round, onOpenFeedback }: LevelCardProps) {
             ))}
           </ul>
         </div>
-      </div>
-
-      {/* Card Footer with User Feedback Action */}
-      <div className="p-6 pt-3 mt-4 border-t border-neutral-800/60 bg-neutral-950/40">
-        <button
-          type="button"
-          onClick={() => {
-            sound.playClick(950);
-            onOpenFeedback(round.number);
-          }}
-          className={`w-full py-3 px-4 font-mono font-black text-xs tracking-widest uppercase flex items-center justify-center gap-2 transition-all cursor-pointer ${
-            isL1
-              ? "bg-[#ff5500] text-black hover:bg-white shadow-[3px_3px_0px_0px_#ffffff]"
-              : "bg-neutral-900 border border-neutral-700 text-white group-hover:bg-[#ff5500] group-hover:text-black group-hover:border-[#ff5500] group-hover:shadow-[3px_3px_0px_0px_#ffffff]"
-          }`}
-        >
-          <Sparkle weight="bold" className="size-4" />
-          <span>{round.feedback_prompt}</span>
-          <ArrowRight weight="bold" className="size-3.5" />
-        </button>
       </div>
     </div>
   );
