@@ -9,7 +9,7 @@ import { MASTER_CODE_LENGTH } from "@/constants/game";
  */
 export function computeMaskedMasterCode(
   masterCode: string | null | undefined,
-  firstDigit: number | null | undefined,
+  firstDigit: string | number | null | undefined,
   currentLevel: number
 ): string | null {
   if (!masterCode && (firstDigit === null || firstDigit === undefined)) return null;
@@ -37,7 +37,7 @@ export function computeMaskedMasterCode(
 export function getMaskedCode(team: {
   masked_master_code?: string | null;
   master_code?: string | null;
-  first_digit?: number | null;
+  first_digit?: string | number | null;
   current_level: number;
 }): string | null {
   if (team.masked_master_code) return team.masked_master_code;

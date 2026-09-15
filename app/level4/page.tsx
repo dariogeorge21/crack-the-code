@@ -284,13 +284,13 @@ export default function Level4Page() {
   }
 
   // Helper to build Master Key slots
-  const cleanMasked = (activeTeam.master_code || "763842****").padEnd(10, "*");
+  const cleanMasked = (activeTeam.master_code || "A63842****").padEnd(10, "*");
   const keySlots = [];
   for (let i = 0; i < 10; i++) {
     if (isFinished && fullMasterCode) {
       keySlots.push({ char: fullMasterCode[i] || "*", isUnlocked: true });
     } else if (i < 6) {
-      keySlots.push({ char: cleanMasked[i] !== "*" ? cleanMasked[i] : (i === 0 ? "7" : String(i)), isUnlocked: true });
+      keySlots.push({ char: cleanMasked[i] !== "*" ? cleanMasked[i] : (i === 0 ? "A" : String(i)), isUnlocked: true });
     } else {
       keySlots.push({ char: "*", isUnlocked: false });
     }

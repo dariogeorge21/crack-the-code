@@ -47,9 +47,9 @@ export function AdminTeamDrawer({
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-500">First Digit Got:</span>
+              <span className="text-zinc-500">Initial Key Letter:</span>
               <span className="font-bold text-amber-400">
-                {team.first_digit !== null ? `[ ${team.first_digit} ]` : "—"}
+                {team.first_digit || team.master_code?.[0] ? `[ ${team.first_digit || team.master_code?.[0]} ]` : "—"}
               </span>
             </div>
             <div className="flex justify-between">

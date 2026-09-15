@@ -6,7 +6,7 @@ export interface Team {
   current_level: number;
   started_at: string | null;
   round1_answer: string | null;
-  first_digit: number | null;
+  first_digit: string | number | null;
   master_code: string | null;
   completed_level1_at: string | null;
   completed_level2_at?: string | null;

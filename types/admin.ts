@@ -29,7 +29,7 @@ export interface AdminTeamData {
   l4_total_seconds?: number | null;
   l4_total_formatted?: string | null;
   round1_answer: string | null;
-  first_digit: number | null;
+  first_digit: string | number | null;
   master_code: string | null;
   status: string;
   rank?: number | null;

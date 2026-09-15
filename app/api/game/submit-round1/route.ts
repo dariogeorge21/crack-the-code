@@ -3,7 +3,7 @@ import { getSupabase, isSupabaseConfigured, getLocalTeams } from "@/lib/supabase
 
 export async function POST(req: Request) {
   try {
-    const { teamId, teamCode, round1Answer, firstDigit } = await req.json();
+    const { teamId, teamCode, round1Answer, firstDigit, firstChar } = await req.json();
 
     if (!round1Answer || typeof round1Answer !== "string" || !round1Answer.trim()) {
       return NextResponse.json({ error: "Round 1 answer is required" }, { status: 400 });
@@ -11,24 +11,20 @@ export async function POST(req: Request) {
 
     const formattedAnswer = round1Answer.trim().toUpperCase();
 
-    if (firstDigit === undefined || firstDigit === null || isNaN(Number(firstDigit))) {
-      return NextResponse.json({ error: "First number of code is required" }, { status: 400 });
+    const rawChar = (firstDigit !== undefined && firstDigit !== null ? firstDigit : firstChar || "").toString().trim().toUpperCase();
+    if (!rawChar || !/^[A-Z]$/.test(rawChar)) {
+      return NextResponse.json({ error: "First letter of code must be a single alphabet character (A-Z)" }, { status: 400 });
     }
 
-    const digitNum = parseInt(firstDigit.toString(), 10);
-    if (digitNum < 0 || digitNum > 9) {
-      return NextResponse.json({ error: "First number must be locked to a single digit (0-9)" }, { status: 400 });
-    }
+    const charPrefix = rawChar;
 
-    const digitPrefix = digitNum.toString();
-
-    // Generate 10-digit integer code starting with the team's input first number
-    const remainingCount = Math.max(0, 10 - digitPrefix.length);
+    // Generate 10-character code starting with the team's input alphabet letter followed by 9 digits
+    const remainingCount = Math.max(0, 10 - charPrefix.length);
     let remainingDigits = "";
     for (let i = 0; i < remainingCount; i++) {
       remainingDigits += Math.floor(Math.random() * 10).toString();
     }
-    const masterCode = (digitPrefix + remainingDigits).slice(0, 10);
+    const masterCode = (charPrefix + remainingDigits).slice(0, 10);
 
     const now = new Date().toISOString();
 
@@ -69,19 +65,21 @@ export async function POST(req: Request) {
 
       // Preserve existing allocated master_code if prefix matches, otherwise use freshly generated code
       const effectiveMasterCode =
-        existingTeam.master_code && existingTeam.master_code.startsWith(digitPrefix) && existingTeam.master_code.length === 10
+        existingTeam.master_code && existingTeam.master_code.startsWith(charPrefix) && existingTeam.master_code.length === 10
           ? existingTeam.master_code
           : masterCode;
 
-      let updateQuery = supabase.from("teams").update({
+      let updatePayload: Record<string, unknown> = {
         round1_answer: formattedAnswer,
-        first_digit: digitNum,
+        first_digit: charPrefix,
         master_code: effectiveMasterCode,
         current_level: 2,
         started_at: startedAt,
         completed_level1_at: now,
         updated_at: now,
-      });
+      };
+
+      let updateQuery = supabase.from("teams").update(updatePayload);
 
       if (teamId) {
         updateQuery = updateQuery.eq("id", teamId);
@@ -89,16 +87,43 @@ export async function POST(req: Request) {
         updateQuery = updateQuery.eq("team_code", teamCode);
       }
 
-      const { data: updatedTeam, error } = await updateQuery.select().single();
+      let { data: updatedTeam, error } = await updateQuery.select().single();
+
+      // Schema resilience fallback: if first_digit column in Supabase is still INT (pending migration),
+      // update without first_digit so master_code (which preserves the letter at index 0) is saved safely!
+      if (error) {
+        console.warn("submit-round1 initial update error, retrying with fallback payload:", error.message);
+        const fallbackPayload = {
+          round1_answer: formattedAnswer,
+          master_code: effectiveMasterCode,
+          current_level: 2,
+          started_at: startedAt,
+          completed_level1_at: now,
+          updated_at: now,
+        };
+        let retryQuery = supabase.from("teams").update(fallbackPayload);
+        if (teamId) {
+          retryQuery = retryQuery.eq("id", teamId);
+        } else {
+          retryQuery = retryQuery.eq("team_code", teamCode);
+        }
+        const retryResult = await retryQuery.select().single();
+        if (retryResult.data) {
+          updatedTeam = retryResult.data;
+          error = null;
+        } else {
+          error = retryResult.error;
+        }
+      }
 
       if (error || !updatedTeam) {
         console.error("submit-round1 db error:", error);
         return NextResponse.json({ error: "Failed to update team progress" }, { status: 500 });
       }
 
-      // Return masked master code to participant (first digit visible, 9 asterisks)
-      const maskedMasterCode = digitPrefix + "*********";
-      const safeTeam = { ...updatedTeam, master_code: maskedMasterCode };
+      // Return masked master code to participant (first character visible, 9 asterisks)
+      const maskedMasterCode = charPrefix + "*********";
+      const safeTeam = { ...updatedTeam, master_code: maskedMasterCode, first_digit: charPrefix };
 
       return NextResponse.json({
         success: true,
@@ -136,17 +161,17 @@ export async function POST(req: Request) {
         team.started_at = now;
       }
       const effectiveMasterCode =
-        team.master_code && team.master_code.startsWith(digitPrefix) && team.master_code.length === 10
+        team.master_code && team.master_code.startsWith(charPrefix) && team.master_code.length === 10
           ? team.master_code
           : masterCode;
 
       team.round1_answer = formattedAnswer;
-      team.first_digit = digitNum;
+      team.first_digit = charPrefix;
       team.master_code = effectiveMasterCode;
       team.current_level = 2;
       team.completed_level1_at = now;
 
-      const maskedMasterCode = digitPrefix + "*********";
+      const maskedMasterCode = charPrefix + "*********";
       const safeTeam = { ...team, master_code: maskedMasterCode };
 
       return NextResponse.json({
