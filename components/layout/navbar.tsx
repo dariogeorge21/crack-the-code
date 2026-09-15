@@ -40,20 +40,12 @@ export function Navbar({
   const handleStartGame = () => {
     if (onStartGame) {
       onStartGame();
-      return;
-    }
-    const element = document.getElementById("rounds");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    } else {
-      window.location.href = "#rounds";
     }
   };
 
   const navLinks = [
-    { label: "[01] ROUNDS", href: "#rounds" },
-    { label: "[02] RULES", href: "#rules" },
-    { label: "[03] CO-ORDINATORS", href: "#coordinators" },
+    { label: "[01] RULES", href: "#rules" },
+    { label: "[02] CO-ORDINATORS", href: "#coordinators" },
   ];
 
   return (

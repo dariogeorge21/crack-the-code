@@ -19,9 +19,9 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ onOpenIdeasModal, onStartGame }: HeroSectionProps = {}) {
-  const scrollToRounds = (e: React.MouseEvent) => {
+  const scrollToRules = (e: React.MouseEvent) => {
     e.preventDefault();
-    const element = document.getElementById("rounds");
+    const element = document.getElementById("rules");
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
     }
@@ -159,28 +159,17 @@ export function HeroSection({ onOpenIdeasModal, onStartGame }: HeroSectionProps 
         </div>
 
         {/* CTA Button Group */}
-        <div className="mt-10 flex flex-col sm:flex-row items-center gap-4 z-20">
-          <a
-            href="#rounds"
-            onClick={scrollToRounds}
-            className="w-full sm:w-auto px-8 py-4 bg-[#ff5500] hover:bg-white text-black font-black text-sm tracking-widest uppercase transition-all shadow-[4px_4px_0px_0px_#ffffff] active:translate-x-0.5 active:translate-y-0.5 flex items-center justify-center gap-3 cursor-pointer"
-          >
-            <span>EXPLORE 4 ROUNDS</span>
-            <ArrowDown weight="bold" className="size-4 animate-bounce" />
-          </a>
-
+        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 z-20">
           <button
             type="button"
             onClick={() => {
               if (onStartGame) {
                 onStartGame();
-              } else {
-                scrollToRounds({ preventDefault: () => {} } as React.MouseEvent);
               }
             }}
-            className="w-full sm:w-auto px-8 py-4 bg-neutral-900 border border-neutral-700 hover:border-[#ff5500] text-white hover:text-[#ff5500] font-bold text-sm tracking-widest uppercase transition-all shadow-[4px_4px_0px_0px_#ff5500] flex items-center justify-center gap-2 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+            className="w-full sm:w-auto px-10 py-4 bg-[#ff5500] hover:bg-white text-black font-black text-sm tracking-widest uppercase transition-all shadow-[4px_4px_0px_0px_#ffffff] flex items-center justify-center gap-3 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
           >
-            <Play weight="bold" className="size-4 text-[#ff5500]" />
+            <Play weight="bold" className="size-4" />
             <span>START GAME</span>
           </button>
         </div>
@@ -198,11 +187,11 @@ export function HeroSection({ onOpenIdeasModal, onStartGame }: HeroSectionProps 
         </div>
 
         <a
-          href="#rounds"
-          onClick={scrollToRounds}
+          href="#rules"
+          onClick={scrollToRules}
           className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors cursor-pointer group"
         >
-          <span className="text-[11px] tracking-widest uppercase">SCROLL DOWN TO DISCOVER ROUNDS</span>
+          <span className="text-[11px] tracking-widest uppercase">SCROLL DOWN FOR RULES &amp; GUIDELINES</span>
           <div className="w-6 h-6 border border-neutral-700 flex items-center justify-center group-hover:border-[#ff5500] group-hover:text-[#ff5500] transition-colors">
             <ArrowDown weight="bold" className="size-3" />
           </div>

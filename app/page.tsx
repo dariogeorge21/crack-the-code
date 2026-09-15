@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Navbar, Footer, MasterKeyHud } from "@/components/layout";
-import { HeroSection, RoundsSection, RulesSection, CoordinatorsSection } from "@/components/sections";
+import { HeroSection, RulesSection, CoordinatorsSection } from "@/components/sections";
 import { IdeaSubmissionModal, GameAuthModal, Round1Modal } from "@/components/modals";
 import { Team } from "@/types";
 import { SESSION_STORAGE_KEY } from "@/constants";
@@ -264,9 +264,6 @@ export default function Home() {
         onOpenIdeasModal={() => handleOpenIdeasModal(1)} 
         onStartGame={handleStartGame}
       />
-
-      {/* 4 Rounds Showcase */}
-      <RoundsSection onOpenIdeasModal={handleOpenIdeasModal} />
 
       {/* Rules & Regulations Section: 10 points structured brutalist grid */}
       <RulesSection />
