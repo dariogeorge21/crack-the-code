@@ -73,24 +73,38 @@ export function AdminTableView({
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-800/60">
-            {teams.map((t, idx) => {
+            {teams.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="py-12 text-center text-zinc-500 text-xs">
+                  No telemetry records found matching current criteria.
+                </td>
+              </tr>
+            ) : (
+              teams.map((t, idx) => {
               const isExpanded = expandedTeamId === t.id;
               const isUnlockedOnly = rowCodeToggles[t.id] ?? showUnlockedOnly;
               const masked = getMaskedCode(t);
               const displayMasterCode = isUnlockedOnly ? masked : t.master_code;
               const hasCode = t.team_code && !t.is_code_flushed && !t.team_code.startsWith("RESET");
+              const isFinished = t.is_finished || t.current_level >= 5 || Boolean(t.completed_level4_at);
 
               // Status badge config
               const statusBadge = (() => {
-                if (t.current_level >= 4) {
+                if (isFinished) {
                   return {
-                    label: "Cleared 🏁",
-                    style: "bg-purple-950/70 border-purple-500/50 text-purple-300",
+                    label: t.rank ? `🏆 Rank #${t.rank} Finished` : "Finished 🏁",
+                    style: "bg-emerald-950/80 border-emerald-500/60 text-emerald-300 font-bold",
+                  };
+                }
+                if (t.current_level === 4) {
+                  return {
+                    label: "Tier 04: Final Lock",
+                    style: "bg-orange-950/70 border-orange-500/50 text-orange-300",
                   };
                 }
                 if (t.current_level === 3) {
                   return {
-                    label: "Tier 03: Final",
+                    label: "Tier 03: Airport",
                     style: "bg-cyan-950/70 border-cyan-500/50 text-cyan-300",
                   };
                 }
@@ -127,8 +141,14 @@ export function AdminTableView({
                     onClick={() => onToggleExpandedTeam(t.id)}
                   >
                     {/* Rank / Number */}
-                    <td className="py-3 px-4 text-zinc-500 font-medium">
-                      {String(idx + 1).padStart(2, "0")}
+                    <td className="py-3 px-4 text-zinc-500 font-medium whitespace-nowrap">
+                      {t.rank ? (
+                        <span className="inline-flex items-center gap-1 font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/40 px-1.5 py-0.5 rounded text-[10px]">
+                          Rank #{t.rank}
+                        </span>
+                      ) : (
+                        String(idx + 1).padStart(2, "0")
+                      )}
                     </td>
 
                     {/* Team Name */}
@@ -183,10 +203,10 @@ export function AdminTableView({
                     <td className="py-3 px-4 whitespace-nowrap">
                       {t.started_at ? (
                         <div className="flex items-center gap-1.5">
-                          {t.current_level >= 4 ? (
+                          {isFinished ? (
                             <>
-                              <CheckCircle weight="fill" className="size-3.5 text-purple-400" />
-                              <span className="font-bold text-purple-300">
+                              <CheckCircle weight="fill" className="size-3.5 text-emerald-400" />
+                              <span className="font-bold text-emerald-300">
                                 {t.total_time_formatted || t.time_taken_formatted}
                               </span>
                             </>
@@ -276,7 +296,7 @@ export function AdminTableView({
                   )}
                 </React.Fragment>
               );
-            })}
+            }))}
           </tbody>
         </table>
       </div>

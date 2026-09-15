@@ -10,7 +10,7 @@ interface AdminStatsProps {
   totalTeams: number;
   activeCount: number;
   completedCount: number;
-  levelCounts: { l1: number; l2: number; l3: number; completed: number };
+  levelCounts: { l1: number; l2: number; l3: number; l4?: number; completed: number };
   isCodeFlushed: boolean;
   leaderTeam: AdminTeamData | null;
   nowMs: number;
@@ -93,26 +93,30 @@ export function AdminStats({
           <ChartBar weight="bold" className="size-4 text-cyan-400" />
         </div>
         {/* Stage Pills */}
-        <div className="grid grid-cols-4 gap-1.5 my-1 text-center">
-          <div className="p-1.5 rounded bg-amber-950/40 border border-amber-500/30">
-            <span className="text-[10px] block text-amber-400/80 font-bold">L1</span>
-            <span className="text-sm font-bold text-amber-300">{levelCounts.l1}</span>
+        <div className="grid grid-cols-5 gap-1 my-1 text-center">
+          <div className="p-1 rounded bg-amber-950/40 border border-amber-500/30">
+            <span className="text-[9px] block text-amber-400/80 font-bold">L1</span>
+            <span className="text-xs sm:text-sm font-bold text-amber-300">{levelCounts.l1}</span>
           </div>
-          <div className="p-1.5 rounded bg-emerald-950/40 border border-emerald-500/30">
-            <span className="text-[10px] block text-emerald-400/80 font-bold">L2</span>
-            <span className="text-sm font-bold text-emerald-300">{levelCounts.l2}</span>
+          <div className="p-1 rounded bg-emerald-950/40 border border-emerald-500/30">
+            <span className="text-[9px] block text-emerald-400/80 font-bold">L2</span>
+            <span className="text-xs sm:text-sm font-bold text-emerald-300">{levelCounts.l2}</span>
           </div>
-          <div className="p-1.5 rounded bg-cyan-950/40 border border-cyan-500/30">
-            <span className="text-[10px] block text-cyan-400/80 font-bold">L3</span>
-            <span className="text-sm font-bold text-cyan-300">{levelCounts.l3}</span>
+          <div className="p-1 rounded bg-cyan-950/40 border border-cyan-500/30">
+            <span className="text-[9px] block text-cyan-400/80 font-bold">L3</span>
+            <span className="text-xs sm:text-sm font-bold text-cyan-300">{levelCounts.l3}</span>
           </div>
-          <div className="p-1.5 rounded bg-purple-950/40 border border-purple-500/30">
-            <span className="text-[10px] block text-purple-400/80 font-bold">Fin</span>
-            <span className="text-sm font-bold text-purple-300">{levelCounts.completed}</span>
+          <div className="p-1 rounded bg-orange-950/40 border border-orange-500/30">
+            <span className="text-[9px] block text-orange-400/80 font-bold">L4</span>
+            <span className="text-xs sm:text-sm font-bold text-orange-300">{levelCounts.l4 ?? 0}</span>
+          </div>
+          <div className="p-1 rounded bg-purple-950/40 border border-purple-500/30">
+            <span className="text-[9px] block text-purple-400/80 font-bold">Fin</span>
+            <span className="text-xs sm:text-sm font-bold text-purple-300">{levelCounts.completed}</span>
           </div>
         </div>
         <div className="mt-2 pt-2 border-t border-zinc-800/60 flex items-center justify-between text-[11px] text-zinc-500">
-          <span>Rounds 1 &rarr; 2 &rarr; 3</span>
+          <span>Rounds 1 &rarr; 2 &rarr; 3 &rarr; 4</span>
           <span className="text-zinc-400">{totalTeams - activeCount - completedCount} Idle</span>
         </div>
       </div>
@@ -129,9 +133,15 @@ export function AdminStats({
               <span className="font-bold text-white text-base truncate">
                 {leaderTeam.team_name}
               </span>
-              <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#ff5500]/20 text-[#ff5500] border border-[#ff5500]/40 shrink-0">
-                Tier 0{leaderTeam.current_level}
-              </span>
+              {leaderTeam.is_finished || leaderTeam.current_level >= 5 ? (
+                <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shrink-0">
+                  🏆 RANK #{leaderTeam.rank || 1}
+                </span>
+              ) : (
+                <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#ff5500]/20 text-[#ff5500] border border-[#ff5500]/40 shrink-0">
+                  Tier 0{leaderTeam.current_level}
+                </span>
+              )}
             </div>
             <div className="text-xs text-amber-300 font-bold mt-1">
               Time: {leaderTime || "—"}
@@ -144,10 +154,10 @@ export function AdminStats({
         )}
         <div className="mt-2 pt-2 border-t border-zinc-800/60 flex items-center justify-between text-[11px] text-zinc-500">
           <span>Current Top Rank</span>
-          {leaderTeam && leaderTeam.current_level >= 4 ? (
-            <span className="text-purple-400 font-semibold">Completed 🏁</span>
+          {leaderTeam && (leaderTeam.is_finished || leaderTeam.current_level >= 5) ? (
+            <span className="text-emerald-400 font-semibold">Rank #1 Finished 🏆</span>
           ) : leaderTeam ? (
-            <span className="text-emerald-400 font-semibold">In Arena</span>
+            <span className="text-amber-400 font-semibold">In Mission</span>
           ) : (
             <span>Standby</span>
           )}

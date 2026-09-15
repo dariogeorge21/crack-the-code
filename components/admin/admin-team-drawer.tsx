@@ -53,15 +53,19 @@ export function AdminTeamDrawer({ team, copiedCode, onCopy }: AdminTeamDrawerPro
           </div>
         </div>
 
-        {/* Panel 2: Round 2 & 3 Telemetry */}
+        {/* Panel 2: Round 2, 3 & 4 Telemetry */}
         <div className="p-3.5 rounded-lg bg-zinc-900/60 border border-zinc-800/60 space-y-2">
           <div className="flex items-center justify-between text-zinc-400 font-semibold text-[11px] pb-1.5 border-b border-zinc-800/60">
             <span className="flex items-center gap-1.5 text-cyan-400">
               <Clock weight="bold" className="size-3.5" />
-              Arena Splits (R2 &amp; R3)
+              Round Splits (R2, R3, R4)
             </span>
-            <span className="text-zinc-500">
-              {team.current_level >= 4 ? "FINISHED" : `TIER 0${team.current_level}`}
+            <span className="text-zinc-500 font-bold">
+              {team.is_finished || team.current_level >= 5
+                ? team.rank
+                  ? `RANK #${team.rank} (FIN)`
+                  : "FINISHED"
+                : `TIER 0${team.current_level}`}
             </span>
           </div>
 
@@ -73,9 +77,15 @@ export function AdminTeamDrawer({ team, copiedCode, onCopy }: AdminTeamDrawerPro
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-zinc-500">R3 Master Key Split:</span>
+              <span className="text-zinc-500">R3 Airport Simulation:</span>
               <span className="font-bold text-purple-300">
                 {team.l3_time_formatted || (team.current_level === 3 ? "In progress" : "—")}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-zinc-500">R4 Final Lock Split:</span>
+              <span className="font-bold text-emerald-400">
+                {team.l4_time_formatted || (team.current_level === 4 ? "In progress" : "—")}
               </span>
             </div>
             <div className="flex justify-between border-t border-zinc-800/60 pt-1">

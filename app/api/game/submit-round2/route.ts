@@ -98,6 +98,7 @@ export async function POST(req: Request) {
         master_code: fullMasterCode,
         current_level: nextLevel,
         round1_answer: updatedRound1Answer,
+        completed_level2_at: now,
         updated_at: now,
       };
 
@@ -108,9 +109,25 @@ export async function POST(req: Request) {
         .select()
         .single();
 
-      if (updateErr || !updatedTeam) {
-        console.error("submit-round2 db update error:", updateErr);
-        return NextResponse.json({ error: "Failed to update team progress" }, { status: 500 });
+      if (updateErr) {
+        // Fallback if column completed_level2_at hasn't been migrated yet in Supabase
+        const fallbackPayload = {
+          master_code: fullMasterCode,
+          current_level: nextLevel,
+          round1_answer: updatedRound1Answer,
+          updated_at: now,
+        };
+        const retry = await supabase
+          .from("teams")
+          .update(fallbackPayload)
+          .eq("team_code", trimmedCode)
+          .select()
+          .single();
+        if (retry.error || !retry.data) {
+          console.error("submit-round2 db update error:", updateErr);
+          return NextResponse.json({ error: "Failed to update team progress" }, { status: 500 });
+        }
+        updatedTeam = retry.data;
       }
 
       const { cleanAnswer } = extractLevelSplits(updatedTeam.round1_answer);

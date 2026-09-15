@@ -12,6 +12,7 @@ import {
   Eye,
   EyeSlash,
   SortAscending,
+  CircleNotch,
 } from "@phosphor-icons/react";
 import {
   AdminFilterStatus,
@@ -39,6 +40,7 @@ interface AdminToolbarProps {
     all: number;
     active: number;
     level2: number;
+    level4: number;
     completed: number;
     idle: number;
   };
@@ -66,7 +68,8 @@ export function AdminToolbar({
     { id: "all", label: "All", count: totalCounts.all },
     { id: "active", label: "Active", count: totalCounts.active },
     { id: "level2", label: "Level 2+", count: totalCounts.level2 },
-    { id: "completed", label: "Completed", count: totalCounts.completed },
+    { id: "level4", label: "Level 4", count: totalCounts.level4 },
+    { id: "completed", label: "Finished", count: totalCounts.completed },
     { id: "idle", label: "Idle", count: totalCounts.idle },
   ];
 
@@ -189,7 +192,11 @@ export function AdminToolbar({
                 : "bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200"
             }`}
           >
-            <Cpu weight="bold" className="size-3.5" />
+            {isGenerating ? (
+              <CircleNotch weight="bold" className="size-3.5 animate-spin" />
+            ) : (
+              <Cpu weight="bold" className="size-3.5" />
+            )}
             <span>{isGenerating ? "Generating..." : "Generate Codes"}</span>
           </button>
 

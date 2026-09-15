@@ -64,9 +64,10 @@ export function AdminCardView({
         const masked = getMaskedCode(t);
         const displayMasterCode = isUnlockedOnly ? masked : t.master_code;
         const hasCode = t.team_code && !t.is_code_flushed && !t.team_code.startsWith("RESET");
+        const isFinished = t.is_finished || t.current_level >= 5 || Boolean(t.completed_level4_at);
 
         // Progress percentage for visual mini-bar
-        const progressPercent = t.current_level >= 4 ? 100 : t.current_level === 3 ? 75 : t.current_level === 2 ? 50 : t.started_at ? 25 : 0;
+        const progressPercent = isFinished ? 100 : t.current_level === 4 ? 80 : t.current_level === 3 ? 60 : t.current_level === 2 ? 40 : t.started_at ? 20 : 0;
 
         return (
           <div
@@ -83,7 +84,13 @@ export function AdminCardView({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-zinc-500">
-                      #{String(idx + 1).padStart(2, "0")}
+                      {t.rank ? (
+                        <span className="text-emerald-400 font-bold bg-emerald-950/60 border border-emerald-500/40 px-1 py-0.2 rounded text-[10px]">
+                          🏆 #{t.rank}
+                        </span>
+                      ) : (
+                        `#${String(idx + 1).padStart(2, "0")}`
+                      )}
                     </span>
                     <h3 className="font-bold text-sm text-white truncate max-w-[180px]" title={t.team_name}>
                       {t.team_name}
@@ -120,10 +127,12 @@ export function AdminCardView({
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="text-zinc-400 font-semibold">
-                    {t.current_level >= 4
-                      ? "Cleared 🏁"
+                    {isFinished
+                      ? t.rank ? `🏆 Rank #${t.rank} Finished` : "Finished 🏁"
+                      : t.current_level === 4
+                      ? "Round 4: Final Lock"
                       : t.current_level === 3
-                      ? "Round 3: Master Key"
+                      ? "Round 3: Airport Simulation"
                       : t.current_level === 2
                       ? "Round 2: Code Arena"
                       : t.started_at
@@ -136,8 +145,10 @@ export function AdminCardView({
                 <div className="w-full h-1.5 rounded-full bg-zinc-800 overflow-hidden">
                   <div
                     className={`h-full transition-all duration-500 ${
-                      t.current_level >= 4
-                        ? "bg-purple-500"
+                      isFinished
+                        ? "bg-emerald-400"
+                        : t.current_level === 4
+                        ? "bg-orange-500"
                         : t.current_level === 3
                         ? "bg-cyan-500"
                         : t.current_level === 2
@@ -158,8 +169,8 @@ export function AdminCardView({
                   <span className="text-[10px] text-zinc-500 block uppercase">Elapsed Time</span>
                   {t.started_at ? (
                     <div className="flex items-center gap-1.5">
-                      {t.current_level >= 4 ? (
-                        <span className="font-bold text-purple-300">
+                      {isFinished ? (
+                        <span className="font-bold text-emerald-300">
                           {t.total_time_formatted || t.time_taken_formatted}
                         </span>
                       ) : (

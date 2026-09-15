@@ -41,8 +41,11 @@ export default function Home() {
           if (data?.success && data?.team) {
             setActiveTeam(data.team);
             // AUTO-FORWARD GUARD:
-            // If team has already unlocked Round 2 or Round 3, never leave them stuck on Level 1 / Home!
-            if (data.team.current_level >= 3) {
+            // If team has already unlocked Round 2, 3, or 4, never leave them stuck on Level 1 / Home!
+            if (data.team.current_level >= 4) {
+              router.replace("/level4");
+              return;
+            } else if (data.team.current_level >= 3) {
               router.replace("/level3");
               return;
             } else if (data.team.current_level >= 2) {
@@ -73,7 +76,9 @@ export default function Home() {
 
   const handleStartGame = () => {
     if (activeTeam) {
-      if (activeTeam.current_level >= 3) {
+      if (activeTeam.current_level >= 4) {
+        router.replace("/level4");
+      } else if (activeTeam.current_level >= 3) {
         router.replace("/level3");
       } else if (activeTeam.current_level >= 2) {
         router.replace("/level2");
@@ -88,7 +93,9 @@ export default function Home() {
   const handleTeamVerified = (team: Team) => {
     setActiveTeam(team);
     localStorage.setItem(SESSION_STORAGE_KEY, team.team_code);
-    if (team.current_level >= 3) {
+    if (team.current_level >= 4) {
+      router.replace("/level4");
+    } else if (team.current_level >= 3) {
       router.replace("/level3");
     } else if (team.current_level >= 2) {
       router.replace("/level2");
@@ -199,7 +206,7 @@ export default function Home() {
                 <div className="shrink-0">
                   <MasterKeyHud
                     masterCode={activeTeam.master_code}
-                    unlockedCount={activeTeam.current_level >= 4 ? 6 : activeTeam.current_level >= 3 ? 3 : 1}
+                    unlockedCount={activeTeam.current_level >= 5 ? 10 : activeTeam.current_level >= 4 ? 6 : activeTeam.current_level >= 3 ? 3 : 1}
                     size="sm"
                   />
                 </div>
@@ -208,7 +215,15 @@ export default function Home() {
               {/* Action Buttons */}
               <div className="flex items-center gap-2 shrink-0 ml-auto xl:ml-0">
                 {/* Current Stage Primary Action Button */}
-                {activeTeam.current_level >= 3 ? (
+                {activeTeam.current_level >= 4 ? (
+                  <Link
+                    href="/level4"
+                    className="px-3.5 py-2 bg-[#ff5500] hover:bg-white text-black font-black uppercase text-xs tracking-wider transition-all cursor-pointer shadow-[3px_3px_0px_0px_#ffffff] flex items-center gap-1.5 whitespace-nowrap active:translate-y-0.5"
+                  >
+                    <Code weight="bold" className="size-3.5" />
+                    <span>FINAL LOCK</span>
+                  </Link>
+                ) : activeTeam.current_level >= 3 ? (
                   <Link
                     href="/level3"
                     className="px-3.5 py-2 bg-[#ff5500] hover:bg-white text-black font-black uppercase text-xs tracking-wider transition-all cursor-pointer shadow-[3px_3px_0px_0px_#ffffff] flex items-center gap-1.5 whitespace-nowrap active:translate-y-0.5"

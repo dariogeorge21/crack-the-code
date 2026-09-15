@@ -57,7 +57,13 @@ export function useLevel2Auth(): UseLevel2AuthReturn {
         }
 
         // ACCESS CONTROL & AUTO-FORWARD:
-        // 1. If team has already completed Round 2 (Tier 3 or 4), forward them directly to Round 3!
+        // 1. If team has already cleared Round 3 (Tier 4 or completed), forward directly to Level 4!
+        if (team.current_level >= 4) {
+          router.replace("/level4");
+          return;
+        }
+
+        // 2. If team has already completed Round 2 (Tier 3), forward directly to Round 3!
         if (team.current_level >= 3) {
           router.replace("/level3");
           return;

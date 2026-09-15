@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Team, SupportedLanguage, ExecutionResult } from "@/types";
 import { STARTER_CODES } from "@/constants";
 
@@ -13,6 +14,7 @@ export function useLevel3Compiler({
   activeTeam,
   setActiveTeam,
 }: UseLevel3CompilerProps) {
+  const router = useRouter();
   // Code Editor state with automatic per-language switching
   const [language, setLanguage] = useState<SupportedLanguage>("python");
   const [codeMap, setCodeMap] = useState<Record<SupportedLanguage, string>>({
@@ -182,7 +184,8 @@ export function useLevel3Compiler({
     setIsUnlockModalOpen(false);
     setIsKeySettled(true);
     setIsKeyHighlighted(true);
-  }, []);
+    router.replace("/level4");
+  }, [router]);
 
   const isKeyRevealedInHeader = Boolean(
     (activeTeam && activeTeam.current_level >= 4 && !isUnlockModalOpen) ||

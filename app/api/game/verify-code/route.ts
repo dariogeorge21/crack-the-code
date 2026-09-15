@@ -6,7 +6,9 @@ function computeMaskedMasterCode(masterCode: string | null, firstDigit: number |
   const full = masterCode || (firstDigit !== null ? `${firstDigit}000000000` : "");
   if (!full) return null;
 
-  if (currentLevel >= 4) {
+  if (currentLevel >= 5) {
+    return full.slice(0, 10);
+  } else if (currentLevel >= 4) {
     return full.slice(0, 6) + "****";
   } else if (currentLevel >= 3) {
     return full.slice(0, 3) + "*******";
@@ -49,7 +51,7 @@ export async function POST(req: Request) {
             if (!localTeam.started_at) {
               localTeam.started_at = serverTime;
             }
-            const { cleanAnswer, completedLevel2At, completedLevel3At } = extractLevelSplits(localTeam.round1_answer);
+            const { cleanAnswer, completedLevel2At, completedLevel3At, completedLevel4At } = extractLevelSplits(localTeam.round1_answer);
             const maskedCode = computeMaskedMasterCode(localTeam.master_code, localTeam.first_digit, localTeam.current_level);
             return NextResponse.json({
               success: true,
@@ -59,6 +61,7 @@ export async function POST(req: Request) {
                 round1_answer: cleanAnswer,
                 completed_level2_at: localTeam.completed_level2_at || completedLevel2At || null,
                 completed_level3_at: localTeam.completed_level3_at || completedLevel3At || null,
+                completed_level4_at: localTeam.completed_level4_at || completedLevel4At || null,
               },
               serverTime,
             });
@@ -85,7 +88,7 @@ export async function POST(req: Request) {
         }
       }
 
-      const { cleanAnswer, completedLevel2At, completedLevel3At } = extractLevelSplits(team.round1_answer);
+      const { cleanAnswer, completedLevel2At, completedLevel3At, completedLevel4At } = extractLevelSplits(team.round1_answer);
       const maskedCode = computeMaskedMasterCode(team.master_code, team.first_digit, team.current_level);
 
       return NextResponse.json({ 
@@ -96,6 +99,7 @@ export async function POST(req: Request) {
           round1_answer: cleanAnswer,
           completed_level2_at: team.completed_level2_at || completedLevel2At || null,
           completed_level3_at: team.completed_level3_at || completedLevel3At || null,
+          completed_level4_at: team.completed_level4_at || completedLevel4At || null,
         },
         serverTime
       });
@@ -115,7 +119,7 @@ export async function POST(req: Request) {
         team.started_at = serverTime;
       }
 
-      const { cleanAnswer, completedLevel2At, completedLevel3At } = extractLevelSplits(team.round1_answer);
+      const { cleanAnswer, completedLevel2At, completedLevel3At, completedLevel4At } = extractLevelSplits(team.round1_answer);
       const maskedCode = computeMaskedMasterCode(team.master_code, team.first_digit, team.current_level);
 
       return NextResponse.json({ 
@@ -126,6 +130,7 @@ export async function POST(req: Request) {
           round1_answer: cleanAnswer,
           completed_level2_at: team.completed_level2_at || completedLevel2At || null,
           completed_level3_at: team.completed_level3_at || completedLevel3At || null,
+          completed_level4_at: team.completed_level4_at || completedLevel4At || null,
         },
         serverTime
       });

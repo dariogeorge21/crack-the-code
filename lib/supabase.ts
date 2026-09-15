@@ -7,19 +7,22 @@ export function extractLevelSplits(rawAnswer: string | null | undefined): {
   cleanAnswer: string | null;
   completedLevel2At: string | null;
   completedLevel3At: string | null;
+  completedLevel4At: string | null;
 } {
-  if (!rawAnswer) return { cleanAnswer: null, completedLevel2At: null, completedLevel3At: null };
+  if (!rawAnswer) return { cleanAnswer: null, completedLevel2At: null, completedLevel3At: null, completedLevel4At: null };
   const l2Match = rawAnswer.match(/\[L2:([^\]]+)\]/);
   const l3Match = rawAnswer.match(/\[L3:([^\]]+)\]/);
+  const l4Match = rawAnswer.match(/\[L4:([^\]]+)\]/);
   const cleanAnswer = rawAnswer.replace(/\[L\d:[^\]]+\]/g, "").trim() || null;
   return {
     cleanAnswer,
     completedLevel2At: l2Match ? l2Match[1] : null,
     completedLevel3At: l3Match ? l3Match[1] : null,
+    completedLevel4At: l4Match ? l4Match[1] : null,
   };
 }
 
-export function appendLevelSplit(rawAnswer: string | null | undefined, level: 2 | 3, timestamp: string): string {
+export function appendLevelSplit(rawAnswer: string | null | undefined, level: 2 | 3 | 4, timestamp: string): string {
   const current = rawAnswer || "";
   const tag = `[L${level}:${timestamp}]`;
   const regex = new RegExp(`\\[L${level}:[^\\]]+\\]`);
@@ -75,17 +78,17 @@ export const getAdminSupabase = (): SupabaseClient | null => {
 // If Supabase credentials haven't been provided yet, the app continues to work smoothly!
 // ==============================================================================
 const DEFAULT_INITIAL_TEAMS: Team[] = [
-  { id: "1", team_number: 1, team_name: "Team 01", team_code: "142", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null },
-  { id: "2", team_number: 2, team_name: "Team 02", team_code: "285", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null },
-  { id: "3", team_number: 3, team_name: "Team 03", team_code: "319", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null },
-  { id: "4", team_number: 4, team_name: "Team 04", team_code: "473", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null },
-  { id: "5", team_number: 5, team_name: "Team 05", team_code: "528", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null },
-  { id: "6", team_number: 6, team_name: "Team 06", team_code: "641", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null },
-  { id: "7", team_number: 7, team_name: "Team 07", team_code: "739", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null },
-  { id: "8", team_number: 8, team_name: "Team 08", team_code: "814", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null },
-  { id: "9", team_number: 9, team_name: "Team 09", team_code: "926", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null },
-  { id: "10", team_number: 10, team_name: "Team 10", team_code: "357", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null },
-  { id: "11", team_number: 11, team_name: "Team 11", team_code: "682", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null },
+  { id: "1", team_number: 1, team_name: "Team 01", team_code: "142", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null, completed_level4_at: null },
+  { id: "2", team_number: 2, team_name: "Team 02", team_code: "285", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null, completed_level4_at: null },
+  { id: "3", team_number: 3, team_name: "Team 03", team_code: "319", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null, completed_level4_at: null },
+  { id: "4", team_number: 4, team_name: "Team 04", team_code: "473", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null, completed_level4_at: null },
+  { id: "5", team_number: 5, team_name: "Team 05", team_code: "528", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null, completed_level4_at: null },
+  { id: "6", team_number: 6, team_name: "Team 06", team_code: "641", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null, completed_level4_at: null },
+  { id: "7", team_number: 7, team_name: "Team 07", team_code: "739", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null, completed_level4_at: null },
+  { id: "8", team_number: 8, team_name: "Team 08", team_code: "814", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null, completed_level4_at: null },
+  { id: "9", team_number: 9, team_name: "Team 09", team_code: "926", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null, completed_level4_at: null },
+  { id: "10", team_number: 10, team_name: "Team 10", team_code: "357", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null, completed_level4_at: null },
+  { id: "11", team_number: 11, team_name: "Team 11", team_code: "682", current_level: 1, started_at: null, round1_answer: null, first_digit: null, master_code: null, completed_level1_at: null, completed_level2_at: null, completed_level3_at: null, completed_level4_at: null },
 ];
 
 // Global scope memory store across Next.js API route calls during dev
@@ -128,6 +131,7 @@ export const triggerLocalReset = (): string => {
     t.completed_level1_at = null;
     t.completed_level2_at = null;
     t.completed_level3_at = null;
+    t.completed_level4_at = null;
   });
   return newTime;
 };

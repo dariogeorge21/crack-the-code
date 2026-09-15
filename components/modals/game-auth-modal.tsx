@@ -6,7 +6,8 @@ import {
   Lock, 
   ShieldWarning, 
   X, 
-  Key 
+  Key,
+  CircleNotch 
 } from "@phosphor-icons/react";
 
 interface GameAuthModalProps {
@@ -184,7 +185,11 @@ export function GameAuthModal({
             disabled={isLoading || !code.trim()}
             className="w-full py-3.5 px-4 bg-[#ff5500] hover:bg-white text-black font-black text-xs tracking-widest uppercase transition-all shadow-[4px_4px_0px_0px_#ffffff] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer active:translate-y-0.5"
           >
-            <Key weight="bold" className="size-4" />
+            {isLoading ? (
+              <CircleNotch weight="bold" className="size-4 animate-spin" />
+            ) : (
+              <Key weight="bold" className="size-4" />
+            )}
             <span>{isLoading ? "VERIFYING TEAM CODE..." : "INITIALIZE SESSION"}</span>
           </button>
         </form>

@@ -57,7 +57,13 @@ export function useLevel3Auth(): UseLevel3AuthReturn {
         }
 
         // ACCESS CONTROL & AUTO-FORWARD:
-        // If team has not reached Level 3 yet, redirect to their active round
+        // 1. If team has already cleared Level 3, redirect to Level 4
+        if (team.current_level >= 4) {
+          router.replace("/level4");
+          return;
+        }
+
+        // 2. If team has not reached Level 3 yet, redirect to their active round
         if (!team.current_level || team.current_level < 3) {
           if (team.current_level === 2) {
             router.replace("/level2");
