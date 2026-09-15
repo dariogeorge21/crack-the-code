@@ -81,12 +81,12 @@ export function Navbar({
         </a>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-mono">
+        <nav className="hidden md:flex items-center justify-center gap-8 text-xs font-mono flex-1 px-4">
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-neutral-400 hover:text-white hover:border-b-2 hover:border-[#ff5500] py-1 tracking-wider transition-colors"
+              className="text-neutral-400 hover:text-white hover:border-b-2 hover:border-[#ff5500] py-1 tracking-wider transition-colors text-center"
             >
               {link.label}
             </a>

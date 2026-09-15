@@ -43,27 +43,19 @@ export function Footer() {
             <h5 className="text-white font-bold uppercase tracking-wider text-xs mb-3">
               EVENT NAVIGATION
             </h5>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <a
-                  href="#rounds"
-                  className="hover:text-[#ff5500] transition-colors"
-                >
-                  [01] The 4 Rounds
-                </a>
-              </li>
+            <ul className="space-y-2 text-xs text-center md:text-left">
               <li>
                 <a
                   href="#rules"
-                  className="hover:text-[#ff5500] transition-colors"
+                  className="inline-block hover:text-[#ff5500] transition-colors"
                 >
-                  [02] Rules & Regulations
+                  [01] Rules & Regulations
                 </a>
               </li>
               <li>
                 <a
                   href="#coordinators"
-                  className="hover:text-[#ff5500] transition-colors"
+                  className="inline-block hover:text-[#ff5500] transition-colors"
                 >
                   [03] Organising Team
                 </a>
