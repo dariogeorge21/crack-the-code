@@ -31,33 +31,33 @@ export function CoordinatorsSection() {
           </div>
         </div>
 
-        {/* Coordinators Grid: Minimized Cards */}
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+        {/* Coordinators Grid: Single-Line Alignment */}
+        <div className="mt-10 grid grid-cols-3 gap-3 sm:gap-5 max-w-6xl mx-auto w-full">
           {EVENT_DATA.coordinators.map((coordinator, idx) => (
             <div
               key={coordinator.name}
-              className="p-5 sm:p-6 bg-neutral-950 border-2 border-neutral-800 hover:border-[#ff5500] transition-all duration-300 shadow-[4px_4px_0px_0px_#27272a] hover:shadow-[4px_4px_0px_0px_#ff5500] flex flex-col justify-between group"
+              className="p-3.5 sm:p-5 lg:p-6 bg-neutral-950 border-2 border-neutral-800 hover:border-[#ff5500] transition-all duration-300 shadow-[3px_3px_0px_0px_#27272a] hover:shadow-[4px_4px_0px_0px_#ff5500] flex flex-col justify-between group min-w-0"
             >
-              <div className="flex items-center justify-between pb-3.5 border-b border-neutral-800">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-neutral-900 border border-neutral-700 flex items-center justify-center text-[#ff5500] font-black text-sm group-hover:border-[#ff5500] transition-colors">
+              <div className="flex items-center justify-between pb-2.5 sm:pb-3.5 border-b border-neutral-800">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 bg-neutral-900 border border-neutral-700 flex items-center justify-center text-[#ff5500] font-black text-xs sm:text-sm group-hover:border-[#ff5500] transition-colors shrink-0">
                     0{idx + 1}
                   </div>
-                  <div>
-                    <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest block">
+                  <div className="min-w-0">
+                    <span className="text-[9px] sm:text-[10px] font-mono text-neutral-500 uppercase tracking-widest block truncate">
                       CO-ORDINATOR
                     </span>
-                    <span className="text-xs font-mono text-[#ff5500] font-bold uppercase">
+                    <span className="text-[10px] sm:text-xs font-mono text-[#ff5500] font-bold uppercase truncate block">
                       {coordinator.role}
                     </span>
                   </div>
                 </div>
 
-                <IdentificationCard weight="bold" className="size-5 text-neutral-600 group-hover:text-[#ff5500] transition-colors" />
+                <IdentificationCard weight="bold" className="size-4 sm:size-5 text-neutral-600 group-hover:text-[#ff5500] transition-colors shrink-0 hidden xs:block" />
               </div>
 
-              <div className="mt-5 pt-1">
-                <h3 className="text-xl sm:text-2xl font-black uppercase text-white tracking-tight group-hover:text-[#ff5500] transition-colors">
+              <div className="mt-3 sm:mt-5 pt-1">
+                <h3 className="text-sm sm:text-lg md:text-xl lg:text-2xl font-black uppercase text-white tracking-tight group-hover:text-[#ff5500] transition-colors truncate" title={coordinator.name}>
                   {coordinator.name}
                 </h3>
               </div>
