@@ -385,7 +385,7 @@ export default function Level4Page() {
             {/* Target Site External Action Button */}
             <div className="p-4 bg-black/60 border-2 border-dashed border-[#ff5500]/60 mb-5 text-center flex flex-col items-center justify-center gap-2">
               <span className="text-[11px] text-neutral-400 font-bold uppercase tracking-wider">
-                EXTERNAL RECONNAISSANCE TARGET:
+                EXTERNAL TARGET WEBSITE:
               </span>
               <a
                 href="https://mini-ctf-ashy.vercel.app/"
@@ -485,7 +485,7 @@ export default function Level4Page() {
             <div className="mt-5 pt-3 border-t border-neutral-900 flex items-center justify-between text-[10px] text-neutral-500">
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <span>STATE PROTECTED // ANTI-TAMPER SHIELD ACTIVE</span>
+                <span>STATE PROTECTED </span>
               </div>
               <span>TIER 04 VAULT</span>
             </div>

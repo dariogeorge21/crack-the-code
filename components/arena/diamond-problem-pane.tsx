@@ -55,7 +55,7 @@ export function DiamondProblemPane({ round = 2 }: DiamondProblemPaneProps = {}) 
           <div className="flex items-start gap-2.5">
             <Lightning weight="fill" className="size-4 text-[#ff5500] shrink-0 mt-0.5" />
             <p className="text-neutral-300 text-xs leading-relaxed font-sans">
-              Write a program in <strong className="text-white">Python</strong>, <strong className="text-white">C</strong>, <strong className="text-white">C++</strong>, or <strong className="text-white">Java</strong> that prints a symmetrical diamond pattern of stars (<code className="text-[#ff5500] font-mono">*</code>) for <code className="text-white font-mono font-bold">n = 5</code>.
+              Write a program in <strong className="text-white">Python</strong>, <strong className="text-white">C</strong>, <strong className="text-white">C++</strong>, or <strong className="text-white">Java</strong> that prints a symmetrical diamond pattern of stars.
             </p>
           </div>
         </div>
@@ -153,16 +153,7 @@ export function DiamondProblemPane({ round = 2 }: DiamondProblemPaneProps = {}) 
         </div>
 
         {/* Input & Output Specifications */}
-        <div className="p-3 bg-[#0c0c11] border border-neutral-800 text-xs space-y-1 text-neutral-400 font-mono">
-          <div>
-            <span className="text-neutral-500 font-bold">Input:</span>{" "}
-            <code className="text-neutral-300">n = 5</code> (hardcoded or read from stdin)
-          </div>
-          <div>
-            <span className="text-neutral-500 font-bold">Output:</span>{" "}
-            <span className="text-neutral-300">Symmetrical 9-line diamond star pattern</span>
-          </div>
-        </div>
+       
       </div>
     </div>
   );

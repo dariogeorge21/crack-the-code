@@ -201,7 +201,7 @@ export function Round1Modal({
           /* Verification Form */
           <form onSubmit={handleSubmitRound1} className="space-y-5">
             <div className="p-3.5 bg-neutral-900/70 border border-neutral-800 text-xs text-neutral-300">
-              <span className="text-[#ff5500] font-bold">MISSION PROTOCOL:</span> Solve Round 1 physical challenge in the lab to discover your team&apos;s cipher key. Enter your round answer and first number. <span className="text-[#ff5500] font-bold">Your official competition clock will begin running the moment your Master Key is generated.</span>
+              <span className="text-[#ff5500] font-bold">MISSION PROTOCOL:</span> Solve Round 1 physical challenge in the lab to discover your team&apos;s cipher key. Enter your round answer and first number. 
             </div>
 
             {/* Input 1: Answer of First Round (Auto-Caps) */}
@@ -289,7 +289,7 @@ export function Round1Modal({
             {/* Master Key Display (Masked with * except first digit) */}
             <div className="p-5 bg-neutral-950 border-2 border-[#ff5500] text-center relative overflow-hidden">
               <div className="absolute top-2 right-2 text-[9px] text-[#ff5500] uppercase font-bold tracking-wider">
-                CRYPTOGRAPHIC MASTER KEY // MASKED
+                CRYPTOGRAPHIC MASTER KEY
               </div>
               <div className="text-xs text-neutral-400 uppercase tracking-widest mb-1">
                 10-DIGIT MASTER CODE:

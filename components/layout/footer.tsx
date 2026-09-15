@@ -69,9 +69,7 @@ export function Footer() {
               SYSTEM TELEMETRY
             </h5>
             <div className="space-y-1.5 text-[11px] text-neutral-400">
-              <div>
-                STATUS: <span className="text-[#ff5500] font-bold">OPERATIONAL</span>
-              </div>
+            
               <div>
                 DURATION: <span className="text-white">3 HOURS STAGED</span>
               </div>
