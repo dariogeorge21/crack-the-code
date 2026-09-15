@@ -12,6 +12,7 @@ import {
   Eye,
   EyeSlash,
   SortAscending,
+  CircleNotch,
 } from "@phosphor-icons/react";
 import {
   AdminFilterStatus,
@@ -191,7 +192,11 @@ export function AdminToolbar({
                 : "bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-200"
             }`}
           >
-            <Cpu weight="bold" className="size-3.5" />
+            {isGenerating ? (
+              <CircleNotch weight="bold" className="size-3.5 animate-spin" />
+            ) : (
+              <Cpu weight="bold" className="size-3.5" />
+            )}
             <span>{isGenerating ? "Generating..." : "Generate Codes"}</span>
           </button>
 

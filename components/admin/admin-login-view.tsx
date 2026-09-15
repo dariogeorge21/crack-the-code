@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ShieldCheck, ShieldWarning, Key, House, ArrowRight } from "@phosphor-icons/react";
+import { ShieldCheck, ShieldWarning, Key, House, ArrowRight, CircleNotch } from "@phosphor-icons/react";
 
 interface AdminLoginViewProps {
   password: string;
@@ -119,7 +119,11 @@ export function AdminLoginView({
             disabled={isLoggingIn || lockedOut || !password.trim()}
             className="w-full py-2.5 px-4 rounded-lg bg-[#ff5500] hover:bg-[#ff772a] text-black font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-[#ff5500]/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
           >
-            <Key weight="bold" className="size-4" />
+            {isLoggingIn ? (
+              <CircleNotch weight="bold" className="size-4 animate-spin" />
+            ) : (
+              <Key weight="bold" className="size-4" />
+            )}
             <span>
               {lockedOut
                 ? `Locked (${formatLockoutTimer(lockoutSecondsRemaining)})`

@@ -13,7 +13,8 @@ import {
   X, 
   Warning, 
   Key, 
-  Cpu
+  Cpu,
+  CircleNotch
 } from "@phosphor-icons/react";
 
 interface Round1ModalProps {
@@ -265,7 +266,11 @@ export function Round1Modal({
               disabled={isSubmitting}
               className="w-full py-3.5 px-4 bg-[#ff5500] hover:bg-white text-black font-black text-xs tracking-widest uppercase transition-all shadow-[4px_4px_0px_0px_#ffffff] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer active:translate-y-0.5"
             >
-              <Cpu weight="bold" className="size-4" />
+              {isSubmitting ? (
+                <CircleNotch weight="bold" className="size-4 animate-spin" />
+              ) : (
+                <Cpu weight="bold" className="size-4" />
+              )}
               <span>
                 {isSubmitting ? "DERIVING CIPHER..." : "VERIFY & GENERATE MASTER KEY"}
               </span>

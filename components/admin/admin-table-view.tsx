@@ -73,7 +73,14 @@ export function AdminTableView({
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-800/60">
-            {teams.map((t, idx) => {
+            {teams.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="py-12 text-center text-zinc-500 text-xs">
+                  No telemetry records found matching current criteria.
+                </td>
+              </tr>
+            ) : (
+              teams.map((t, idx) => {
               const isExpanded = expandedTeamId === t.id;
               const isUnlockedOnly = rowCodeToggles[t.id] ?? showUnlockedOnly;
               const masked = getMaskedCode(t);
@@ -289,7 +296,7 @@ export function AdminTableView({
                   )}
                 </React.Fragment>
               );
-            })}
+            }))}
           </tbody>
         </table>
       </div>

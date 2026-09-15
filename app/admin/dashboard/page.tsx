@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { CircleNotch } from "@phosphor-icons/react";
 import { useAdminDashboard } from "@/hooks";
 import {
   AdminHeader,
@@ -114,9 +115,10 @@ export default function AdminDashboardPage() {
             type="button"
             onClick={handleGenerateTeams}
             disabled={isGenerating}
-            className="px-3 py-1.5 rounded-lg bg-[#ff5500] hover:bg-[#ff772a] text-black font-bold uppercase text-[11px] tracking-wider transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+            className="px-3 py-1.5 rounded-lg bg-[#ff5500] hover:bg-[#ff772a] text-black font-bold uppercase text-[11px] tracking-wider transition-colors cursor-pointer shrink-0 disabled:opacity-50 flex items-center gap-1.5"
           >
-            {isGenerating ? "Generating..." : "Generate Codes Now"}
+            {isGenerating && <CircleNotch weight="bold" className="size-3.5 animate-spin" />}
+            <span>{isGenerating ? "Generating..." : "Generate Codes Now"}</span>
           </button>
         </div>
       )}

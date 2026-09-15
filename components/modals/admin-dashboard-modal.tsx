@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { X, ShieldCheck, ArrowClockwise } from "@phosphor-icons/react";
+import { X, ShieldCheck, ArrowClockwise, CircleNotch } from "@phosphor-icons/react";
 import { useAdminDashboard } from "@/hooks";
 import {
   AdminStats,
@@ -121,9 +121,10 @@ export function AdminDashboardModal({ isOpen, onClose }: AdminDashboardModalProp
                 type="button"
                 onClick={handleGenerateTeams}
                 disabled={isGenerating}
-                className="px-2.5 py-1 rounded bg-[#ff5500] text-black font-bold text-[11px] uppercase cursor-pointer"
+                className="px-2.5 py-1 rounded bg-[#ff5500] hover:bg-[#ff772a] text-black font-bold text-[11px] uppercase cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
               >
-                Generate Now
+                {isGenerating && <CircleNotch weight="bold" className="size-3.5 animate-spin" />}
+                <span>{isGenerating ? "Generating..." : "Generate Now"}</span>
               </button>
             </div>
           )}
