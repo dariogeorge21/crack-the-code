@@ -18,29 +18,67 @@ export async function POST() {
     if (isSupabaseConfigured()) {
       const supabase = getAdminSupabase()!;
 
-      // 1. Reset all teams, flush master keys and flush team codes in parallel
+      // Base reset payload that is guaranteed to exist in any Supabase schema
+      const basePayload = (placeholderCode: string) => ({
+        current_level: 1,
+        team_code: placeholderCode,
+        started_at: null,
+        round1_answer: null, // cleans all embedded [L2:..], [L3:..], [L4:..] splits
+        first_digit: null,
+        master_code: null,
+        completed_level1_at: null,
+        updated_at: now,
+      });
+
+      // Probe whether optional migration columns (completed_level2_at, 3, 4) exist
+      let hasMigrationColumns = false;
+      try {
+        const { error: probeError } = await supabase
+          .from("teams")
+          .update({
+            completed_level2_at: null,
+            completed_level3_at: null,
+            completed_level4_at: null,
+          })
+          .eq("team_number", 1);
+
+        hasMigrationColumns = !probeError;
+      } catch {
+        hasMigrationColumns = false;
+      }
+
+      // 1. Reset all teams, flush master keys and flush team codes
       await Promise.all(
-        Array.from({ length: TOTAL_TEAMS }, (_, idx) => {
+        Array.from({ length: TOTAL_TEAMS }, async (_, idx) => {
           const teamNum = idx + 1;
           const placeholderCode = `RESET_${teamNum < 10 ? "0" : ""}${teamNum}`;
-          return supabase
+          const payload = hasMigrationColumns
+            ? {
+                ...basePayload(placeholderCode),
+                completed_level2_at: null,
+                completed_level3_at: null,
+                completed_level4_at: null,
+              }
+            : basePayload(placeholderCode);
+
+          const { error } = await supabase
             .from("teams")
-            .update({
-              current_level: 1,
-              team_code: placeholderCode, // Flushed! Old 3-digit codes destroyed
-              started_at: null, // Timer cleared
-              round1_answer: null,
-              first_digit: null,
-              master_code: null, // Flushed!
-              completed_level1_at: null,
-              completed_level2_at: null,
-              completed_level3_at: null,
-              completed_level4_at: null,
-              updated_at: now,
-            })
+            .update(payload)
             .eq("team_number", teamNum);
+
+          if (error) {
+            console.error(`Error updating team ${teamNum}:`, error);
+            // Fallback to strict base payload if any error occurred
+            await supabase
+              .from("teams")
+              .update(basePayload(placeholderCode))
+              .eq("team_number", teamNum);
+          }
         })
       );
+
+      // Always keep local in-memory dev store in sync
+      triggerLocalReset();
 
       // 2. Bump game_state reset timestamp
       await supabase
