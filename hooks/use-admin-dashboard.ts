@@ -62,6 +62,18 @@ export function useAdminDashboard() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [toast, setToast] = useState<AdminToast | null>(null);
 
+  // Targeted Team Action Modal State (Reset Team / Revert Level)
+  const [teamActionModal, setTeamActionModal] = useState<{
+    isOpen: boolean;
+    action: "reset" | "revert" | null;
+    team: AdminTeamData | null;
+  }>({
+    isOpen: false,
+    action: null,
+    team: null,
+  });
+  const [isTeamActionExecuting, setIsTeamActionExecuting] = useState(false);
+
   const showToast = useCallback((message: string, type: AdminToast["type"] = "info") => {
     setToast({ message, type });
   }, []);
@@ -79,12 +91,17 @@ export function useAdminDashboard() {
     return () => clearTimeout(timer);
   }, [toast]);
 
-  // Query server for current lockout status on load
+  // Query server for current lockout & session status on load
   const checkLockoutStatus = useCallback(async () => {
     try {
       const res = await fetch("/api/admin/login");
       const data = await res.json();
-      if (data.lockedOut) {
+      if (data.authenticated) {
+        setIsAuthenticated(true);
+        sessionStorage.setItem("admin_auth_token", "admin_authorized_asthra_session");
+        setLockedOut(false);
+        setAttemptsRemaining(5);
+      } else if (data.lockedOut) {
         setLockedOut(true);
         setLockoutSecondsRemaining(data.remainingSeconds);
         setAttemptsRemaining(0);
@@ -97,29 +114,10 @@ export function useAdminDashboard() {
     }
   }, []);
 
-  // Check lockout status on mount if not authenticated
+  // Check lockout & session status on mount
   useEffect(() => {
-    let ignore = false;
-    if (!isAuthenticated) {
-      fetch("/api/admin/login")
-        .then((res) => res.json())
-        .then((data) => {
-          if (ignore) return;
-          if (data.lockedOut) {
-            setLockedOut(true);
-            setLockoutSecondsRemaining(data.remainingSeconds);
-            setAttemptsRemaining(0);
-          } else {
-            setLockedOut(false);
-            setAttemptsRemaining(data.attemptsRemaining ?? 5);
-          }
-        })
-        .catch(() => {});
-    }
-    return () => {
-      ignore = true;
-    };
-  }, [isAuthenticated]);
+    checkLockoutStatus();
+  }, [checkLockoutStatus]);
 
 
   // Lockout Countdown Timer
@@ -228,7 +226,7 @@ export function useAdminDashboard() {
       }
 
       if (data.success) {
-        sessionStorage.setItem("admin_auth_token", data.token);
+        sessionStorage.setItem("admin_auth_token", "admin_authorized_asthra_session");
         setIsAuthenticated(true);
         setPassword("");
         setAuthError(null);
@@ -242,7 +240,12 @@ export function useAdminDashboard() {
   };
 
   // Handle Logout
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/admin/login", { method: "DELETE" });
+    } catch {
+      // Ignore network errors on logout
+    }
     sessionStorage.removeItem("admin_auth_token");
     setIsAuthenticated(false);
     setPassword("");
@@ -316,6 +319,82 @@ export function useAdminDashboard() {
       showToast("Network error resetting game", "error");
     } finally {
       setIsResetting(false);
+    }
+  };
+
+  // Targeted Team Action Handlers
+  const handleOpenResetTeam = useCallback((team: AdminTeamData) => {
+    setTeamActionModal({
+      isOpen: true,
+      action: "reset",
+      team,
+    });
+  }, []);
+
+  const handleOpenRevertTeam = useCallback((team: AdminTeamData) => {
+    if (team.current_level <= 1) {
+      showToast(`${team.team_name} is already at Level 1. Cannot revert further.`, "warning");
+      return;
+    }
+    setTeamActionModal({
+      isOpen: true,
+      action: "revert",
+      team,
+    });
+  }, [showToast]);
+
+  const handleCloseTeamActionModal = useCallback(() => {
+    if (isTeamActionExecuting) return;
+    setTeamActionModal({ isOpen: false, action: null, team: null });
+  }, [isTeamActionExecuting]);
+
+  const handleConfirmTeamAction = async () => {
+    if (!teamActionModal.team || !teamActionModal.action || isTeamActionExecuting) return;
+
+    const { team, action } = teamActionModal;
+    setIsTeamActionExecuting(true);
+
+    try {
+      const endpoint =
+        action === "reset"
+          ? "/api/admin/teams/reset-team"
+          : "/api/admin/teams/revert-level";
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          teamId: team.id,
+          teamNumber: team.team_number,
+          teamCode: team.team_code,
+        }),
+      });
+
+      if (res.status === 401) {
+        setIsAuthenticated(false);
+        showToast("Session expired. Please log in again.", "warning");
+        setTeamActionModal({ isOpen: false, action: null, team: null });
+        return;
+      }
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setTeamActionModal({ isOpen: false, action: null, team: null });
+        showToast(
+          data.message ||
+            (action === "reset"
+              ? `${team.team_name} reset to Level 1`
+              : `${team.team_name} level reverted`),
+          "success"
+        );
+        fetchTeams(false);
+      } else {
+        showToast(data.error || "Team action failed", "error");
+      }
+    } catch {
+      showToast("Network error executing team action", "error");
+    } finally {
+      setIsTeamActionExecuting(false);
     }
   };
 
@@ -479,6 +558,12 @@ export function useAdminDashboard() {
     showResetModal,
     setShowResetModal,
     handleConfirmReset,
+    teamActionModal,
+    isTeamActionExecuting,
+    handleOpenResetTeam,
+    handleOpenRevertTeam,
+    handleCloseTeamActionModal,
+    handleConfirmTeamAction,
     showExportModal,
     setShowExportModal,
     copiedCode,

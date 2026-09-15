@@ -1,22 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabase, isSupabaseConfigured, getLocalTeams, Team, extractLevelSplits } from "@/lib/supabase";
-
-function computeMaskedMasterCode(masterCode: string | null, firstDigit: number | null, currentLevel: number): string | null {
-  if (!masterCode && firstDigit === null) return null;
-  const full = masterCode || (firstDigit !== null ? `${firstDigit}000000000` : "");
-  if (!full) return null;
-
-  if (currentLevel >= 5) {
-    return full.slice(0, 10);
-  } else if (currentLevel >= 4) {
-    return full.slice(0, 6) + "****";
-  } else if (currentLevel >= 3) {
-    return full.slice(0, 3) + "*******";
-  } else if (currentLevel >= 2 || firstDigit !== null) {
-    return full.slice(0, 1) + "*********";
-  }
-  return null;
-}
+import { computeMaskedMasterCode } from "@/lib/code-masking";
 
 export async function POST(req: Request) {
   try {

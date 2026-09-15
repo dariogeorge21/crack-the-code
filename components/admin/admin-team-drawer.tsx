@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Copy, Check, Key, Clock, Code } from "@phosphor-icons/react";
+import { Copy, Check, Key, Clock, Code, Warning, ArrowCounterClockwise } from "@phosphor-icons/react";
 
 import { AdminTeamData } from "@/types";
 import { getMaskedCode } from "@/lib/code-masking";
@@ -10,9 +10,17 @@ interface AdminTeamDrawerProps {
   team: AdminTeamData;
   copiedCode: string | null;
   onCopy: (text: string, id: string) => void;
+  onResetTeam?: (team: AdminTeamData) => void;
+  onRevertTeam?: (team: AdminTeamData) => void;
 }
 
-export function AdminTeamDrawer({ team, copiedCode, onCopy }: AdminTeamDrawerProps) {
+export function AdminTeamDrawer({
+  team,
+  copiedCode,
+  onCopy,
+  onResetTeam,
+  onRevertTeam,
+}: AdminTeamDrawerProps) {
   const maskedCode = getMaskedCode(team);
   const copyKeyId = `full-key-${team.id}`;
 
@@ -153,6 +161,51 @@ export function AdminTeamDrawer({ team, copiedCode, onCopy }: AdminTeamDrawerPro
           </div>
         </div>
       </div>
+
+      {/* Admin Operations Action Bar */}
+      {(onResetTeam || onRevertTeam) && (
+        <div className="mt-4 pt-3.5 border-t border-zinc-800/80 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-zinc-400 text-[11px]">
+            <span className="font-bold text-zinc-300 uppercase tracking-wider">Admin Controls:</span>
+            <span>Targeted management for {team.team_name}</span>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            {onRevertTeam && (
+              <button
+                type="button"
+                onClick={() => onRevertTeam(team)}
+                disabled={team.current_level <= 1}
+                title={
+                  team.current_level <= 1
+                    ? "Team is already at Level 1. Cannot revert further."
+                    : `Revert team to Tier 0${team.current_level - 1}`
+                }
+                className="px-3 py-1.5 rounded-lg bg-amber-950/40 hover:bg-amber-900/50 border border-amber-500/50 hover:border-amber-500 text-amber-300 hover:text-amber-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <ArrowCounterClockwise weight="bold" className="size-3.5" />
+                <span>
+                  {team.current_level <= 1
+                    ? "Revert (At Level 1)"
+                    : `Revert to Tier 0${team.current_level - 1}`}
+                </span>
+              </button>
+            )}
+
+            {onResetTeam && (
+              <button
+                type="button"
+                onClick={() => onResetTeam(team)}
+                title="Reset team back to Level 1 while preserving team code & master key sequence"
+                className="px-3 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/50 border border-red-500/50 hover:border-red-500 text-red-300 hover:text-red-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Warning weight="bold" className="size-3.5" />
+                <span>Reset Team to L1</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

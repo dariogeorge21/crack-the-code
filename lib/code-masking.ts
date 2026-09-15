@@ -12,7 +12,7 @@ export function computeMaskedMasterCode(
   firstDigit: number | null | undefined,
   currentLevel: number
 ): string | null {
-  if (!masterCode && firstDigit === null && firstDigit === undefined) return null;
+  if (!masterCode && (firstDigit === null || firstDigit === undefined)) return null;
   const full = masterCode || (firstDigit !== null && firstDigit !== undefined ? `${firstDigit}${"0".repeat(MASTER_CODE_LENGTH - 1)}` : "");
   if (!full) return null;
 
@@ -25,10 +25,10 @@ export function computeMaskedMasterCode(
   if (currentLevel >= 3) {
     return full.slice(0, 3) + "*******";
   }
-  if (currentLevel >= 2 || (firstDigit !== null && firstDigit !== undefined)) {
+  if (currentLevel >= 2) {
     return full.slice(0, 1) + "*********";
   }
-  return null;
+  return "**********";
 }
 
 /**

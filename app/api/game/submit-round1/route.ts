@@ -67,10 +67,16 @@ export async function POST(req: Request) {
       // START TIMER HERE: Set started_at only when master key is generated!
       const startedAt = existingTeam.started_at || now;
 
+      // Preserve existing allocated master_code if prefix matches, otherwise use freshly generated code
+      const effectiveMasterCode =
+        existingTeam.master_code && existingTeam.master_code.startsWith(digitPrefix) && existingTeam.master_code.length === 10
+          ? existingTeam.master_code
+          : masterCode;
+
       let updateQuery = supabase.from("teams").update({
         round1_answer: formattedAnswer,
         first_digit: digitNum,
-        master_code: masterCode,
+        master_code: effectiveMasterCode,
         current_level: 2,
         started_at: startedAt,
         completed_level1_at: now,
@@ -129,9 +135,14 @@ export async function POST(req: Request) {
       if (!team.started_at) {
         team.started_at = now;
       }
+      const effectiveMasterCode =
+        team.master_code && team.master_code.startsWith(digitPrefix) && team.master_code.length === 10
+          ? team.master_code
+          : masterCode;
+
       team.round1_answer = formattedAnswer;
       team.first_digit = digitNum;
-      team.master_code = masterCode;
+      team.master_code = effectiveMasterCode;
       team.current_level = 2;
       team.completed_level1_at = now;
 

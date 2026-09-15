@@ -8,4 +8,5 @@ export * from "./admin-export-modal";
 export * from "./admin-reset-modal";
 export * from "./admin-login-view";
 export * from "./admin-toast";
+export * from "./admin-team-action-modal";
 
