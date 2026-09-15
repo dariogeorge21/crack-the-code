@@ -158,7 +158,7 @@ export function Round3UnlockModal({
     digits[1] || "4",
     digits[2] || "2",
   ];
-  const cleanMasked = (maskedMasterCode || "763842****").padEnd(10, "*");
+  const cleanMasked = (maskedMasterCode || "A63842****").padEnd(10, "*");
 
   // Build 10 slots for the popup's Master Key display
   // Crucially: before phase === "settled", slots 3, 4, 5 display "*" (masked/hashed)!
@@ -173,7 +173,7 @@ export function Round3UnlockModal({
     if (i < 3) {
       // Previously unlocked in Round 1 & Round 2
       slots.push({
-        char: cleanMasked[i] !== "*" ? cleanMasked[i] : i === 0 ? "7" : i === 1 ? "6" : "3",
+        char: cleanMasked[i] !== "*" ? cleanMasked[i] : i === 0 ? "A" : i === 1 ? "6" : "3",
         isUnlocked: true,
         isTarget: false,
         isNew: false,

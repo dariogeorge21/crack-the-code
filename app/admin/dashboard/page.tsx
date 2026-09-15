@@ -11,6 +11,7 @@ import {
   AdminCardView,
   AdminExportModal,
   AdminResetModal,
+  AdminTeamActionModal,
   AdminLoginView,
   AdminToast,
 } from "@/components/admin";
@@ -60,6 +61,12 @@ export default function AdminDashboardPage() {
     showResetModal,
     setShowResetModal,
     handleConfirmReset,
+    teamActionModal,
+    isTeamActionExecuting,
+    handleOpenResetTeam,
+    handleOpenRevertTeam,
+    handleCloseTeamActionModal,
+    handleConfirmTeamAction,
     showExportModal,
     setShowExportModal,
     copiedCode,
@@ -174,6 +181,8 @@ export default function AdminDashboardPage() {
             onToggleExpandedTeam={toggleExpandedTeam}
             copiedCode={copiedCode}
             onCopy={copyToClipboard}
+            onResetTeam={handleOpenResetTeam}
+            onRevertTeam={handleOpenRevertTeam}
             onClearFilters={() => {
               setSearchQuery("");
               setFilterStatus("all");
@@ -190,6 +199,8 @@ export default function AdminDashboardPage() {
             onToggleExpandedTeam={toggleExpandedTeam}
             copiedCode={copiedCode}
             onCopy={copyToClipboard}
+            onResetTeam={handleOpenResetTeam}
+            onRevertTeam={handleOpenRevertTeam}
             onClearFilters={() => {
               setSearchQuery("");
               setFilterStatus("all");
@@ -211,6 +222,15 @@ export default function AdminDashboardPage() {
         onClose={() => setShowResetModal(false)}
         onConfirm={handleConfirmReset}
         isResetting={isResetting}
+      />
+
+      <AdminTeamActionModal
+        isOpen={teamActionModal.isOpen}
+        action={teamActionModal.action}
+        team={teamActionModal.team}
+        onClose={handleCloseTeamActionModal}
+        onConfirm={handleConfirmTeamAction}
+        isLoading={isTeamActionExecuting}
       />
     </div>
   );

@@ -25,6 +25,8 @@ interface AdminTableViewProps {
   onToggleExpandedTeam: (id: string) => void;
   copiedCode: string | null;
   onCopy: (text: string, id: string) => void;
+  onResetTeam?: (team: AdminTeamData) => void;
+  onRevertTeam?: (team: AdminTeamData) => void;
   onClearFilters?: () => void;
 }
 
@@ -38,6 +40,8 @@ export function AdminTableView({
   onToggleExpandedTeam,
   copiedCode,
   onCopy,
+  onResetTeam,
+  onRevertTeam,
   onClearFilters,
 }: AdminTableViewProps) {
   if (teams.length === 0) {
@@ -290,6 +294,8 @@ export function AdminTableView({
                           team={t}
                           copiedCode={copiedCode}
                           onCopy={onCopy}
+                          onResetTeam={onResetTeam}
+                          onRevertTeam={onRevertTeam}
                         />
                       </td>
                     </tr>

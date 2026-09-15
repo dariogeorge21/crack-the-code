@@ -24,6 +24,8 @@ interface AdminCardViewProps {
   onToggleExpandedTeam: (id: string) => void;
   copiedCode: string | null;
   onCopy: (text: string, id: string) => void;
+  onResetTeam?: (team: AdminTeamData) => void;
+  onRevertTeam?: (team: AdminTeamData) => void;
   onClearFilters?: () => void;
 }
 
@@ -37,6 +39,8 @@ export function AdminCardView({
   onToggleExpandedTeam,
   copiedCode,
   onCopy,
+  onResetTeam,
+  onRevertTeam,
   onClearFilters,
 }: AdminCardViewProps) {
   if (teams.length === 0) {
@@ -243,6 +247,8 @@ export function AdminCardView({
                 team={t}
                 copiedCode={copiedCode}
                 onCopy={onCopy}
+                onResetTeam={onResetTeam}
+                onRevertTeam={onRevertTeam}
               />
             )}
           </div>

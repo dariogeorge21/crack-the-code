@@ -9,10 +9,10 @@ import { MASTER_CODE_LENGTH } from "@/constants/game";
  */
 export function computeMaskedMasterCode(
   masterCode: string | null | undefined,
-  firstDigit: number | null | undefined,
+  firstDigit: string | number | null | undefined,
   currentLevel: number
 ): string | null {
-  if (!masterCode && firstDigit === null && firstDigit === undefined) return null;
+  if (!masterCode && (firstDigit === null || firstDigit === undefined)) return null;
   const full = masterCode || (firstDigit !== null && firstDigit !== undefined ? `${firstDigit}${"0".repeat(MASTER_CODE_LENGTH - 1)}` : "");
   if (!full) return null;
 
@@ -25,10 +25,10 @@ export function computeMaskedMasterCode(
   if (currentLevel >= 3) {
     return full.slice(0, 3) + "*******";
   }
-  if (currentLevel >= 2 || (firstDigit !== null && firstDigit !== undefined)) {
+  if (currentLevel >= 2) {
     return full.slice(0, 1) + "*********";
   }
-  return null;
+  return "**********";
 }
 
 /**
@@ -37,7 +37,7 @@ export function computeMaskedMasterCode(
 export function getMaskedCode(team: {
   masked_master_code?: string | null;
   master_code?: string | null;
-  first_digit?: number | null;
+  first_digit?: string | number | null;
   current_level: number;
 }): string | null {
   if (team.masked_master_code) return team.masked_master_code;

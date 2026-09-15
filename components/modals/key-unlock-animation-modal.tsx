@@ -132,9 +132,9 @@ export function KeyUnlockAnimationModal({
 
   if (!isOpen) return null;
 
-  // First digit unlocked in Level 1 (or default '7')
+  // First character unlocked in Level 1 (or default 'A')
   const firstDigit =
-    maskedMasterCode && maskedMasterCode[0] !== "*" ? maskedMasterCode[0] : "7";
+    maskedMasterCode && maskedMasterCode[0] !== "*" ? maskedMasterCode[0] : "A";
 
   // Build 10 slots for the popup's Master Key display
   // Crucially: before phase === "settled", slots 1 and 2 MUST display "*" (masked)!

@@ -172,3 +172,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+
+// DELETE: Logout by clearing the admin session cookie
+export async function DELETE() {
+  const response = NextResponse.json({ success: true, message: "Logged out" });
+  response.cookies.set(ADMIN_COOKIE_NAME, "", {
+    ...getAdminCookieOptions(0),
+    maxAge: 0,
+  });
+  return response;
+}

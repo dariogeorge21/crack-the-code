@@ -135,7 +135,7 @@ export default function Level3Page() {
       <Round3UnlockModal
         isOpen={isUnlockModalOpen}
         digits={revealedDigits || ["8", "4", "2"]}
-        maskedMasterCode={activeTeam.master_code || "763842****"}
+        maskedMasterCode={activeTeam.master_code || "A63842****"}
         onComplete={handleModalComplete}
         onSettled={handleModalSettled}
       />

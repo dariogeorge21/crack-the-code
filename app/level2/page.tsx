@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import { useRouter } from "next/navigation";
@@ -138,7 +138,7 @@ export default function Level2Page() {
         <KeyUnlockAnimationModal
           isOpen={isUnlockModalOpen}
           digits={revealedDigits}
-          maskedMasterCode={activeTeam.master_code || "7*********"}
+          maskedMasterCode={activeTeam.master_code || "A*********"}
           onSettled={handleModalSettled}
           onComplete={handleModalComplete}
         />

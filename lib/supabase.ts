@@ -32,6 +32,13 @@ export function appendLevelSplit(rawAnswer: string | null | undefined, level: 2 
   return current ? `${current} ${tag}` : tag;
 }
 
+export function removeLevelSplit(rawAnswer: string | null | undefined, level: 2 | 3 | 4): string | null {
+  if (!rawAnswer) return null;
+  const regex = new RegExp(`\\[L${level}:[^\\]]+\\]`, "g");
+  const cleaned = rawAnswer.replace(regex, "").replace(/\s+/g, " ").trim();
+  return cleaned || null;
+}
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "";
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
@@ -134,4 +141,68 @@ export const triggerLocalReset = (): string => {
     t.completed_level4_at = null;
   });
   return newTime;
+};
+
+export const findLocalTeam = (identifier: string | number): Team | undefined => {
+  const teams = getLocalTeams();
+  const idStr = identifier.toString().trim();
+  return teams.find(
+    (t) =>
+      t.id === idStr ||
+      t.team_number.toString() === idStr ||
+      t.team_code.toLowerCase() === idStr.toLowerCase()
+  );
+};
+
+export const resetLocalTeam = (identifier: string | number): Team | null => {
+  const team = findLocalTeam(identifier);
+  if (!team) return null;
+
+  const now = new Date().toISOString();
+  team.current_level = 1;
+  team.started_at = null;
+  team.round1_answer = null;
+  team.completed_level1_at = null;
+  team.completed_level2_at = null;
+  team.completed_level3_at = null;
+  team.completed_level4_at = null;
+  team.updated_at = now;
+  // Preserves team.team_code, team.master_code, and team.first_digit!
+
+  return team;
+};
+
+export const revertLocalTeamLevel = (
+  identifier: string | number
+): { team: Team; previousLevel: number; newLevel: number } | null => {
+  const team = findLocalTeam(identifier);
+  if (!team) return null;
+
+  const currentLevel = team.current_level;
+  if (currentLevel <= 1) return null;
+
+  const now = new Date().toISOString();
+  const newLevel = currentLevel - 1;
+
+  if (currentLevel >= 5) {
+    team.current_level = 4;
+    team.completed_level4_at = null;
+    team.round1_answer = removeLevelSplit(team.round1_answer, 4);
+  } else if (currentLevel === 4) {
+    team.current_level = 3;
+    team.completed_level3_at = null;
+    team.round1_answer = removeLevelSplit(team.round1_answer, 3);
+  } else if (currentLevel === 3) {
+    team.current_level = 2;
+    team.completed_level2_at = null;
+    team.round1_answer = removeLevelSplit(team.round1_answer, 2);
+  } else if (currentLevel === 2) {
+    team.current_level = 1;
+    team.completed_level1_at = null;
+    team.round1_answer = null;
+    // master_code and first_digit are preserved!
+  }
+
+  team.updated_at = now;
+  return { team, previousLevel: currentLevel, newLevel };
 };
