@@ -388,7 +388,7 @@ export default function Level4Page() {
                 EXTERNAL RECONNAISSANCE TARGET:
               </span>
               <a
-                href="https://www.google.com"
+                href="https://mini-ctf-ashy.vercel.app/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-neutral-900 hover:bg-[#ff5500] text-white hover:text-black font-black text-xs uppercase tracking-widest border border-[#ff5500] hover:border-white transition-all shadow-[3px_3px_0px_0px_#ff5500] active:translate-y-0.5 cursor-pointer"
