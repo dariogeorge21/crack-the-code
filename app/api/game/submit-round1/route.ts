@@ -1,19 +1,17 @@
 import { NextResponse } from "next/server";
 import { getSupabase, isSupabaseConfigured, getLocalTeams } from "@/lib/supabase";
+import { isRound1PairValid, normalizeRound1Input } from "@/constants";
 
 export async function POST(req: Request) {
   try {
     const { teamId, teamCode, round1Answer, firstDigit, firstChar } = await req.json();
 
-    if (!round1Answer || typeof round1Answer !== "string" || !round1Answer.trim()) {
-      return NextResponse.json({ error: "Round 1 answer is required" }, { status: 400 });
-    }
-
-    const formattedAnswer = round1Answer.trim().toUpperCase();
-
+    const formattedAnswer = normalizeRound1Input(round1Answer);
     const rawChar = (firstDigit !== undefined && firstDigit !== null ? firstDigit : firstChar || "").toString().trim().toUpperCase();
-    if (!rawChar || !/^[A-Z]$/.test(rawChar)) {
-      return NextResponse.json({ error: "First letter of code must be a single alphabet character (A-Z)" }, { status: 400 });
+
+    // Validate that the letter and answer combination matches the official Round 1 DSA Chain pair
+    if (!rawChar || !formattedAnswer || !isRound1PairValid(rawChar, formattedAnswer)) {
+      return NextResponse.json({ error: "Invalid answer" }, { status: 400 });
     }
 
     const charPrefix = rawChar;

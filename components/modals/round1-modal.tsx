@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Team } from "@/types";
 import { useMissionTimer } from "@/hooks";
 import { formatTimer } from "@/lib/time";
+import { isRound1PairValid, normalizeRound1Input } from "@/constants";
 import { 
   CheckCircle, 
   LockOpen, 
@@ -85,15 +86,11 @@ export function Round1Modal({
     e.preventDefault();
     setErrorMsg(null);
 
-    const formattedAnswer = round1Answer.trim().toUpperCase();
-    if (!formattedAnswer) {
-      setErrorMsg("Please enter the answer for Round 1");
-      return;
-    }
-
+    const formattedAnswer = normalizeRound1Input(round1Answer);
     const cleanedLetter = firstDigit.replace(/[^a-zA-Z]/g, "").toUpperCase();
-    if (!cleanedLetter || cleanedLetter.length !== 1) {
-      setErrorMsg("First letter must be a single alphabet character (A-Z)");
+
+    if (!cleanedLetter || !formattedAnswer || !isRound1PairValid(cleanedLetter, formattedAnswer)) {
+      setErrorMsg("Invalid answer");
       return;
     }
 
