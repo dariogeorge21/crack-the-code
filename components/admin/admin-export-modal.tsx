@@ -25,9 +25,13 @@ export function AdminExportModal({
     const list = teams
       .map(
         (t) =>
-          `Team ${String(t.team_number).padStart(2, "0")} [${t.team_name}]: Code ${
+          `Team ${String(t.team_number).padStart(2, "0")} [${t.team_name}]${
+            t.rank ? ` (Rank #${t.rank})` : ""
+          }: Code ${
             t.team_code && !t.is_code_flushed ? t.team_code : "FLUSHED"
-          }`
+          } | Stage: Level ${t.current_level} | Total: ${
+            t.total_time_formatted || t.time_taken_formatted || "00:00:00"
+          }${t.l4_time_formatted ? ` | L4 Split: ${t.l4_time_formatted}` : ""}`
       )
       .join("\n");
 
@@ -38,13 +42,13 @@ export function AdminExportModal({
   };
 
   const handleCopyCSV = () => {
-    const header = "Team_Number,Team_Name,Access_Code,Current_Level,Time_Elapsed\n";
+    const header = "Rank,Team_Number,Team_Name,Access_Code,Current_Level,Time_Elapsed,Level_1_Split,Level_2_Split,Level_3_Split,Level_4_Split,Status\n";
     const rows = teams
       .map(
         (t) =>
-          `${t.team_number},"${t.team_name}",${
+          `"${t.rank ? `#${t.rank}` : ""}",${t.team_number},"${t.team_name}",${
             t.team_code && !t.is_code_flushed ? t.team_code : ""
-          },${t.current_level},"${t.total_time_formatted || t.time_taken_formatted || ""}"`
+          },${t.current_level},"${t.total_time_formatted || t.time_taken_formatted || ""}","${t.l1_time_formatted || ""}","${t.l2_time_formatted || ""}","${t.l3_time_formatted || ""}","${t.l4_time_formatted || ""}","${t.status || ""}"`
       )
       .join("\n");
 
@@ -132,6 +136,11 @@ export function AdminExportModal({
                   #{String(t.team_number).padStart(2, "0")}
                 </span>
                 <span className="font-semibold text-zinc-200">{t.team_name}</span>
+                {t.rank ? (
+                  <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold text-[10px]">
+                    Rank #{t.rank}
+                  </span>
+                ) : null}
               </div>
               <div>
                 {t.team_code && !t.is_code_flushed ? (

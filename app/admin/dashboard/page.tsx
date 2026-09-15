@@ -153,6 +153,7 @@ export default function AdminDashboardPage() {
           all: teams.length,
           active: activeTeams.length,
           level2: teams.filter((t) => t.current_level >= 2).length,
+          level4: teams.filter((t) => t.current_level === 4 && !t.is_finished).length,
           completed: completedTeams.length,
           idle: teams.filter((t) => t.started_at === null).length,
         }}

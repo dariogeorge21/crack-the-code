@@ -37,9 +37,10 @@ export async function GET() {
     const now = new Date().getTime();
 
     const formattedTeams = teams.map((team) => {
-      const { cleanAnswer, completedLevel2At, completedLevel3At } = extractLevelSplits(team.round1_answer);
+      const { cleanAnswer, completedLevel2At, completedLevel3At, completedLevel4At } = extractLevelSplits(team.round1_answer);
       const effectiveL2At = team.completed_level2_at || completedLevel2At || null;
       const effectiveL3At = team.completed_level3_at || completedLevel3At || null;
+      const effectiveL4At = team.completed_level4_at || completedLevel4At || null;
 
       let timeTakenSeconds: number | null = null;
       let totalElapsedSeconds: number | null = null;
@@ -48,10 +49,13 @@ export async function GET() {
       let l2TotalSeconds: number | null = null;
       let l3Seconds: number | null = null;
       let l3TotalSeconds: number | null = null;
+      let l4Seconds: number | null = null;
+      let l4TotalSeconds: number | null = null;
 
       const isCodeFlushed = !team.team_code || team.team_code.startsWith("RESET") || team.team_code.startsWith("FLUSH");
       const displayCode = isCodeFlushed ? "" : team.team_code;
-      let status: "NOT STARTED" | "AWAITING CODE" | "IN ROUND 1" | "LEVEL 2 UNLOCKED" | "LEVEL 3 UNLOCKED" | "LEVEL 4 UNLOCKED" = isCodeFlushed ? "AWAITING CODE" : "NOT STARTED";
+      let status: "NOT STARTED" | "AWAITING CODE" | "IN ROUND 1" | "LEVEL 2 UNLOCKED" | "LEVEL 3 UNLOCKED" | "LEVEL 4 UNLOCKED" | "FINISHED" = isCodeFlushed ? "AWAITING CODE" : "NOT STARTED";
+      const isFinished = team.current_level >= 5 || Boolean(effectiveL4At);
 
       if (team.started_at) {
         const startTime = new Date(team.started_at).getTime();
@@ -76,8 +80,9 @@ export async function GET() {
         }
 
         // L3 completion split
+        let l3EndTime: number | null = null;
         if (effectiveL3At) {
-          const l3EndTime = new Date(effectiveL3At).getTime();
+          l3EndTime = new Date(effectiveL3At).getTime();
           l3TotalSeconds = Math.max(0, Math.floor((l3EndTime - startTime) / 1000));
           if (l2EndTime) {
             l3Seconds = Math.max(0, Math.floor((l3EndTime - l2EndTime) / 1000));
@@ -88,27 +93,42 @@ export async function GET() {
           }
         }
 
-        // Total game timer: if Level 3 completed, total freezes at sum of splits for 100% mathematical consistency
-        if (effectiveL3At || team.current_level >= 4) {
-          if (l1Seconds !== null && l2Seconds !== null && l3Seconds !== null) {
-            totalElapsedSeconds = l1Seconds + l2Seconds + l3Seconds;
-          } else if (effectiveL3At) {
-            totalElapsedSeconds = Math.max(0, Math.floor((new Date(effectiveL3At).getTime() - startTime) / 1000));
+        // L4 completion split
+        if (effectiveL4At) {
+          const l4EndTime = new Date(effectiveL4At).getTime();
+          l4TotalSeconds = Math.max(0, Math.floor((l4EndTime - startTime) / 1000));
+          if (l3EndTime) {
+            l4Seconds = Math.max(0, Math.floor((l4EndTime - l3EndTime) / 1000));
+          } else if (l2EndTime) {
+            l4Seconds = Math.max(0, Math.floor((l4EndTime - l2EndTime) / 1000));
+          } else if (l1EndTime) {
+            l4Seconds = Math.max(0, Math.floor((l4EndTime - l1EndTime) / 1000));
+          } else {
+            l4Seconds = l4TotalSeconds;
+          }
+        }
+
+        // Total game timer: freezes ONLY when Level 4 is completed (Finished)!
+        if (isFinished) {
+          if (l1Seconds !== null && l2Seconds !== null && l3Seconds !== null && l4Seconds !== null) {
+            totalElapsedSeconds = l1Seconds + l2Seconds + l3Seconds + l4Seconds;
+          } else if (effectiveL4At) {
+            totalElapsedSeconds = Math.max(0, Math.floor((new Date(effectiveL4At).getTime() - startTime) / 1000));
           } else {
             totalElapsedSeconds = Math.max(0, Math.floor((now - startTime) / 1000));
           }
+          status = "FINISHED";
         } else {
           totalElapsedSeconds = Math.max(0, Math.floor((now - startTime) / 1000));
+          status = team.current_level === 4
+            ? "LEVEL 4 UNLOCKED"
+            : team.current_level === 3
+            ? "LEVEL 3 UNLOCKED"
+            : team.current_level === 2
+            ? "LEVEL 2 UNLOCKED"
+            : "IN ROUND 1";
         }
         timeTakenSeconds = totalElapsedSeconds;
-
-        status = team.current_level >= 4
-          ? "LEVEL 4 UNLOCKED"
-          : team.current_level >= 3
-          ? "LEVEL 3 UNLOCKED"
-          : team.current_level >= 2
-          ? "LEVEL 2 UNLOCKED"
-          : "IN ROUND 1";
       }
 
       return {
@@ -116,7 +136,8 @@ export async function GET() {
         round1_answer: cleanAnswer,
         completed_level2_at: effectiveL2At,
         completed_level3_at: effectiveL3At,
-        masked_master_code: computeMaskedMasterCode(team.master_code, team.first_digit, team.current_level),
+        completed_level4_at: effectiveL4At,
+        masked_master_code: computeMaskedMasterCode(team.master_code, team.first_digit, isFinished ? 5 : team.current_level),
         team_code: displayCode,
         is_code_flushed: isCodeFlushed,
         time_taken_seconds: timeTakenSeconds,
@@ -133,8 +154,30 @@ export async function GET() {
         l3_time_formatted: l3Seconds !== null ? formatDuration(l3Seconds) : null,
         l3_total_seconds: l3TotalSeconds,
         l3_total_formatted: l3TotalSeconds !== null ? formatDuration(l3TotalSeconds) : null,
+        l4_time_seconds: l4Seconds,
+        l4_time_formatted: l4Seconds !== null ? formatDuration(l4Seconds) : null,
+        l4_total_seconds: l4TotalSeconds,
+        l4_total_formatted: l4TotalSeconds !== null ? formatDuration(l4TotalSeconds) : null,
         status,
+        is_finished: isFinished,
+        rank: null as number | null,
       };
+    });
+
+    // Compute Ranks for Finished Teams based on total_time_seconds ascending
+    const finishedTeams = formattedTeams
+      .filter((t) => t.is_finished && t.total_time_seconds !== null)
+      .sort((a, b) => (a.total_time_seconds || 0) - (b.total_time_seconds || 0));
+
+    const rankMap = new Map<string, number>();
+    finishedTeams.forEach((t, idx) => {
+      rankMap.set(t.id || t.team_code, idx + 1);
+    });
+
+    formattedTeams.forEach((t) => {
+      if (t.is_finished) {
+        t.rank = rankMap.get(t.id || t.team_code) || null;
+      }
     });
 
     return NextResponse.json({

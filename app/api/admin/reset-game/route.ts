@@ -33,6 +33,9 @@ export async function POST() {
               first_digit: null,
               master_code: null, // Flushed!
               completed_level1_at: null,
+              completed_level2_at: null,
+              completed_level3_at: null,
+              completed_level4_at: null,
               updated_at: now,
             })
             .eq("team_number", teamNum);

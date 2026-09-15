@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { AdminTeamData } from "@/types";
 
-export type AdminFilterStatus = "all" | "active" | "level2" | "level3" | "completed" | "idle";
+export type AdminFilterStatus = "all" | "active" | "level2" | "level3" | "level4" | "completed" | "idle";
 export type AdminSortOption = "number" | "rank" | "time" | "name";
 export type AdminViewMode = "table" | "cards";
 
@@ -325,17 +325,18 @@ export function useAdminDashboard() {
   }, [teams]);
 
   const activeTeams = useMemo(() => {
-    return teams.filter((t) => t.started_at !== null && t.current_level < 4);
+    return teams.filter((t) => t.started_at !== null && !t.is_finished && t.current_level < 5);
   }, [teams]);
 
   const completedTeams = useMemo(() => {
-    return teams.filter((t) => t.current_level >= 4);
+    return teams.filter((t) => t.is_finished || t.current_level >= 5 || Boolean(t.completed_level4_at));
   }, [teams]);
 
   const levelCounts = useMemo(() => {
-    const counts = { l1: 0, l2: 0, l3: 0, completed: 0 };
+    const counts = { l1: 0, l2: 0, l3: 0, l4: 0, completed: 0 };
     for (const t of teams) {
-      if (t.current_level >= 4) counts.completed++;
+      if (t.is_finished || t.current_level >= 5 || t.completed_level4_at) counts.completed++;
+      else if (t.current_level === 4) counts.l4++;
       else if (t.current_level === 3) counts.l3++;
       else if (t.current_level === 2) counts.l2++;
       else if (t.started_at) counts.l1++;
@@ -343,12 +344,19 @@ export function useAdminDashboard() {
     return counts;
   }, [teams]);
 
-  // Find leading team: highest current_level, then lowest total_time_seconds
+  // Find leading team: Finished teams by rank first, otherwise highest current_level, then lowest total time
   const leaderTeam = useMemo(() => {
     const started = teams.filter((t) => t.started_at !== null);
     if (started.length === 0) return null;
 
     return [...started].sort((a, b) => {
+      const aFinished = a.is_finished || a.current_level >= 5;
+      const bFinished = b.is_finished || b.current_level >= 5;
+      if (aFinished && !bFinished) return -1;
+      if (!aFinished && bFinished) return 1;
+      if (aFinished && bFinished) {
+        return (a.rank ?? 999) - (b.rank ?? 999);
+      }
       if (b.current_level !== a.current_level) {
         return b.current_level - a.current_level;
       }
@@ -373,7 +381,7 @@ export function useAdminDashboard() {
 
         // Status Filter
         if (filterStatus === "active") {
-          return team.started_at !== null && team.current_level < 4;
+          return team.started_at !== null && !team.is_finished && team.current_level < 5;
         }
         if (filterStatus === "level2") {
           return team.current_level >= 2;
@@ -381,8 +389,11 @@ export function useAdminDashboard() {
         if (filterStatus === "level3") {
           return team.current_level >= 3;
         }
-        if (filterStatus === "completed") {
+        if (filterStatus === "level4") {
           return team.current_level >= 4;
+        }
+        if (filterStatus === "completed") {
+          return team.is_finished || team.current_level >= 5 || Boolean(team.completed_level4_at);
         }
         if (filterStatus === "idle") {
           return team.started_at === null;
@@ -391,7 +402,14 @@ export function useAdminDashboard() {
       })
       .sort((a, b) => {
         if (sortBy === "rank") {
-          // Rank: Completed first, then by Level desc, then by Time asc
+          // Rank: Finished teams first by rank, then by Level desc, then by Time asc
+          const aFin = a.is_finished || a.current_level >= 5;
+          const bFin = b.is_finished || b.current_level >= 5;
+          if (aFin && !bFin) return -1;
+          if (!aFin && bFin) return 1;
+          if (aFin && bFin) {
+            return (a.rank ?? 999) - (b.rank ?? 999);
+          }
           if (b.current_level !== a.current_level) {
             return b.current_level - a.current_level;
           }

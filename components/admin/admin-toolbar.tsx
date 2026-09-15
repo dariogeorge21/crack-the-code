@@ -39,6 +39,7 @@ interface AdminToolbarProps {
     all: number;
     active: number;
     level2: number;
+    level4: number;
     completed: number;
     idle: number;
   };
@@ -66,7 +67,8 @@ export function AdminToolbar({
     { id: "all", label: "All", count: totalCounts.all },
     { id: "active", label: "Active", count: totalCounts.active },
     { id: "level2", label: "Level 2+", count: totalCounts.level2 },
-    { id: "completed", label: "Completed", count: totalCounts.completed },
+    { id: "level4", label: "Level 4", count: totalCounts.level4 },
+    { id: "completed", label: "Finished", count: totalCounts.completed },
     { id: "idle", label: "Idle", count: totalCounts.idle },
   ];
 
