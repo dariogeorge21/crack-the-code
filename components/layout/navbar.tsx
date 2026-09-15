@@ -56,11 +56,11 @@ export function Navbar({
           : "bg-transparent border-b border-white/5"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between relative">
         {/* Brand */}
         <a
           href="#"
-          className="flex items-center gap-3 group select-none"
+          className="flex items-center gap-3 group select-none relative z-10"
         >
           <div className="w-8 h-8 bg-[#ff5500] flex items-center justify-center text-black font-black text-xs group-hover:bg-white transition-colors">
             <LockOpen weight="bold" className="size-4" />
@@ -81,7 +81,7 @@ export function Navbar({
         </a>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center justify-center gap-8 text-xs font-mono flex-1 px-4">
+        <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center justify-center gap-8 text-xs font-mono z-10">
           {navLinks.map((link) => (
             <a
               key={link.href}
@@ -94,7 +94,7 @@ export function Navbar({
         </nav>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative z-10">
           {/* Master Key HUD in Header */}
           {activeTeamMasterCode && (
             <MasterKeyHud
