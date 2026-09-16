@@ -198,11 +198,11 @@ export function AdminTeamDrawer({
               <button
                 type="button"
                 onClick={() => onResetTeam(team)}
-                title="Reset team back to Level 1 while preserving team code & master key sequence"
+                title="Reset team back to Level 1 and generate fresh access code"
                 className="px-3 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/50 border border-red-500/50 hover:border-red-500 text-red-300 hover:text-red-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
               >
-                <Warning weight="bold" className="size-3.5" />
-                <span>Reset Team to L1</span>
+                <ArrowCounterClockwise weight="bold" className="size-3.5" />
+                <span>Reset Team & New Code</span>
               </button>
             )}
           </div>

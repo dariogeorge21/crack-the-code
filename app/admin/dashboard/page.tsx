@@ -228,6 +228,7 @@ export default function AdminDashboardPage() {
         isOpen={teamActionModal.isOpen}
         action={teamActionModal.action}
         team={teamActionModal.team}
+        result={teamActionModal.result}
         onClose={handleCloseTeamActionModal}
         onConfirm={handleConfirmTeamAction}
         isLoading={isTeamActionExecuting}

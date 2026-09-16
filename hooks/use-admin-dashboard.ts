@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { AdminTeamData } from "@/types";
+import { AdminTeamData, AdminTeamActionResult } from "@/types";
 
 export type AdminFilterStatus = "all" | "active" | "level2" | "level3" | "level4" | "completed" | "idle";
 export type AdminSortOption = "number" | "rank" | "time" | "name";
@@ -67,10 +67,12 @@ export function useAdminDashboard() {
     isOpen: boolean;
     action: "reset" | "revert" | null;
     team: AdminTeamData | null;
+    result?: AdminTeamActionResult | null;
   }>({
     isOpen: false,
     action: null,
     team: null,
+    result: null,
   });
   const [isTeamActionExecuting, setIsTeamActionExecuting] = useState(false);
 
@@ -381,6 +383,7 @@ export function useAdminDashboard() {
       isOpen: true,
       action: "reset",
       team,
+      result: null,
     });
   }, []);
 
@@ -393,12 +396,13 @@ export function useAdminDashboard() {
       isOpen: true,
       action: "revert",
       team,
+      result: null,
     });
   }, [showToast]);
 
   const handleCloseTeamActionModal = useCallback(() => {
     if (isTeamActionExecuting) return;
-    setTeamActionModal({ isOpen: false, action: null, team: null });
+    setTeamActionModal({ isOpen: false, action: null, team: null, result: null });
   }, [isTeamActionExecuting]);
 
   const handleConfirmTeamAction = async () => {
@@ -430,20 +434,37 @@ export function useAdminDashboard() {
       if (res.status === 401) {
         clearAuthSession();
         showToast("Session expired. Please log in again.", "warning");
-        setTeamActionModal({ isOpen: false, action: null, team: null });
+        setTeamActionModal({ isOpen: false, action: null, team: null, result: null });
         return;
       }
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setTeamActionModal({ isOpen: false, action: null, team: null });
-        showToast(
-          data.message ||
-            (action === "reset"
-              ? `${team.team_name} reset to Level 1`
-              : `${team.team_name} level reverted`),
-          "success"
-        );
+        if (action === "reset" && data.newTeamCode) {
+          // Keep modal open in success state with new fresh code displayed for easy copy
+          setTeamActionModal((prev) => ({
+            ...prev,
+            result: {
+              success: true,
+              newTeamCode: data.newTeamCode,
+              previousTeamCode: data.previousTeamCode,
+              message: data.message,
+            },
+          }));
+          showToast(
+            `Team ${team.team_name} reset to Level 1! New Access Code: ${data.newTeamCode}`,
+            "success"
+          );
+        } else {
+          setTeamActionModal({ isOpen: false, action: null, team: null, result: null });
+          showToast(
+            data.message ||
+              (action === "reset"
+                ? `${team.team_name} reset to Level 1`
+                : `${team.team_name} level reverted`),
+            "success"
+          );
+        }
         fetchTeams(false);
       } else {
         showToast(data.error || "Team action failed", "error");
