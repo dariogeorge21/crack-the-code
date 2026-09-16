@@ -87,9 +87,9 @@ export function Round1Modal({
     setErrorMsg(null);
 
     const formattedAnswer = normalizeRound1Input(round1Answer);
-    const cleanedLetter = firstDigit.replace(/[^a-zA-Z]/g, "").toUpperCase();
+    const cleanedDigit = firstDigit.replace(/[^0-9]/g, "");
 
-    if (!cleanedLetter || !formattedAnswer || !isRound1PairValid(cleanedLetter, formattedAnswer)) {
+    if (!cleanedDigit || !formattedAnswer || !isRound1PairValid(cleanedDigit, formattedAnswer)) {
       setErrorMsg("Invalid answer");
       return;
     }
@@ -104,7 +104,7 @@ export function Round1Modal({
           teamId: team.id,
           teamCode: team.team_code,
           round1Answer: formattedAnswer,
-          firstDigit: cleanedLetter,
+          firstDigit: cleanedDigit,
         }),
       });
 
@@ -227,33 +227,33 @@ export function Round1Modal({
               </span>
             </div>
 
-            {/* Input 2: First Letter of Code (Locked to exactly 1 alphabet character A-Z) */}
+            {/* Input 2: First Digit of Code (Locked to exactly 1 digit 0-9) */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs uppercase font-bold text-neutral-300">
-                  [2] FIRST LETTER OF CODE:
+                  [2] FIRST DIGIT OF CODE:
                 </label>
                 <span className="text-[10px] text-[#ff5500] font-bold uppercase tracking-wider">
-                  LOCKED TO 1 LETTER (A-Z)
+                  LOCKED TO 1 DIGIT (0-9)
                 </span>
               </div>
               <div className="flex items-center gap-3">
                 <input
                   type="text"
-                  inputMode="text"
-                  pattern="[a-zA-Z]"
+                  inputMode="numeric"
+                  pattern="[0-9]"
                   maxLength={1}
                   required
                   value={firstDigit}
                   onChange={(e) => {
-                    const cleaned = e.target.value.replace(/[^a-zA-Z]/g, "").toUpperCase();
+                    const cleaned = e.target.value.replace(/[^0-9]/g, "");
                     setFirstDigit(cleaned.slice(-1));
                   }}
-                  placeholder="K"
+                  placeholder="0"
                   className="w-24 px-4 py-3 bg-neutral-950 border-2 border-neutral-700 focus:border-[#ff5500] text-2xl font-black text-[#ff5500] text-center outline-none transition-colors font-mono shadow-[2px_2px_0px_0px_#ff5500]"
                 />
                 <span className="text-xs text-neutral-400 font-mono">
-                  &larr; Enter single unlocked letter (A-Z). Master Key will start with this letter.
+                  &larr; Enter single unlocked number (0-9). Master Key will start with this number.
                 </span>
               </div>
             </div>
@@ -281,7 +281,7 @@ export function Round1Modal({
               <div>
                 <div className="font-bold uppercase text-white">ROUND 1 COMPLETED & VERIFIED</div>
                 <div className="text-[11px] text-neutral-300">
-                  Master Vault Key generated successfully starting with letter [{firstDigit || team.first_digit}].
+                  Master Vault Key generated successfully starting with digit [{firstDigit || (team.first_digit !== null && team.first_digit !== undefined ? team.first_digit : "")}].
                 </div>
               </div>
             </div>
@@ -296,14 +296,14 @@ export function Round1Modal({
               </div>
               <div className="py-2.5 flex items-center justify-center gap-2 sm:gap-3 whitespace-nowrap flex-nowrap select-none overflow-x-auto">
                 <span className="text-[#ff5500] bg-neutral-900 px-3 py-1 border-2 border-[#ff5500] font-black text-2xl sm:text-3xl shrink-0 font-mono shadow-[2px_2px_0px_0px_#ff5500]">
-                  {firstDigit || team.first_digit || (generatedMasterCode ? generatedMasterCode[0] : "A")}
+                  {firstDigit || (team.first_digit !== null && team.first_digit !== undefined ? team.first_digit.toString() : "") || (generatedMasterCode ? generatedMasterCode[0] : "0")}
                 </span>
                 <span className="text-neutral-400 font-mono font-black text-2xl sm:text-3xl tracking-[0.2em] sm:tracking-[0.28em] whitespace-nowrap shrink-0">
                   *********
                 </span>
               </div>
               <div className="text-[11px] text-neutral-400 mt-2">
-                First letter validated: [{firstDigit || team.first_digit}]. Remaining 9 digits are encrypted in the central vault.
+                First digit validated: [{firstDigit || (team.first_digit !== null && team.first_digit !== undefined ? team.first_digit : "")}]. Remaining 9 digits are encrypted in the central vault.
               </div>
             </div>
 
@@ -315,7 +315,7 @@ export function Round1Modal({
               </div>
               <div>
                 <span className="text-neutral-500 text-[10px] block uppercase">Initial Cipher Key:</span>
-                <span className="text-[#ff5500] font-bold block">{firstDigit || team.first_digit}</span>
+                <span className="text-[#ff5500] font-bold block">{firstDigit || (team.first_digit !== null && team.first_digit !== undefined ? team.first_digit : "")}</span>
               </div>
             </div>
 

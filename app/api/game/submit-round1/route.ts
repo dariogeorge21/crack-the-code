@@ -7,16 +7,16 @@ export async function POST(req: Request) {
     const { teamId, teamCode, round1Answer, firstDigit, firstChar } = await req.json();
 
     const formattedAnswer = normalizeRound1Input(round1Answer);
-    const rawChar = (firstDigit !== undefined && firstDigit !== null ? firstDigit : firstChar || "").toString().trim().toUpperCase();
+    const rawChar = (firstDigit !== undefined && firstDigit !== null ? firstDigit : (firstChar !== undefined && firstChar !== null ? firstChar : "")).toString().trim().toUpperCase();
 
-    // Validate that the letter and answer combination matches the official Round 1 DSA Chain pair
+    // Validate that the number and answer combination matches the official Round 1 DSA Chain pair
     if (!rawChar || !formattedAnswer || !isRound1PairValid(rawChar, formattedAnswer)) {
       return NextResponse.json({ error: "Invalid answer" }, { status: 400 });
     }
 
     const charPrefix = rawChar;
 
-    // Generate 10-character code starting with the team's input alphabet letter followed by 9 digits
+    // Generate 10-character code starting with the team's input digit followed by 9 digits
     const remainingCount = Math.max(0, 10 - charPrefix.length);
     let remainingDigits = "";
     for (let i = 0; i < remainingCount; i++) {

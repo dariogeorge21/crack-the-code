@@ -150,7 +150,7 @@ export async function POST(req: Request) {
       // Ensure team has a valid 10-digit master_code
       let fullMasterCode = team.master_code;
       if (!fullMasterCode || fullMasterCode.length < 10) {
-        const prefix = team.first_digit ? team.first_digit.toString() : "A";
+        const prefix = team.first_digit !== null && team.first_digit !== undefined ? team.first_digit.toString() : "0";
         let rest = "";
         while (prefix.length + rest.length < 10) {
           rest += Math.floor(Math.random() * 10).toString();
@@ -303,7 +303,7 @@ export async function POST(req: Request) {
 
       let fullMasterCode = team.master_code;
       if (!fullMasterCode || fullMasterCode.length < 10) {
-        const prefix = team.first_digit ? team.first_digit.toString() : "A";
+        const prefix = team.first_digit !== null && team.first_digit !== undefined ? team.first_digit.toString() : "0";
         let rest = "";
         while (prefix.length + rest.length < 10) {
           rest += Math.floor(Math.random() * 10).toString();

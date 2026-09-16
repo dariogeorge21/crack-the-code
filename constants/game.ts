@@ -12,27 +12,27 @@ export const ROUND_ACCESS_CODES = {
 } as const;
 
 export const ROUND1_VALID_PAIRS: Record<string, string> = {
-  A: "POINTER",
-  B: "TREE",
-  C: "ROOT",
-  D: "PRIORITY QUEUE",
-  E: "SORTING",
-  F: "BUBBLE SORT",
-  G: "SELECTION SORT",
-  H: "INSERTION SORT",
-  I: "LINEAR SEARCH",
-  J: "HASHING",
-  K: "LINKED LIST",
+  "0": "POINTER",
+  "1": "TREE",
+  "2": "ROOT",
+  "3": "PRIORITY QUEUE",
+  "4": "SORTING",
+  "5": "BUBBLE SORT",
+  "6": "SELECTION SORT",
+  "7": "INSERTION SORT",
+  "8": "LINEAR SEARCH",
+  "9": "HASHING",
 } as const;
 
 export function normalizeRound1Input(val: string): string {
   return (val || "").trim().toUpperCase().replace(/\s+/g, " ");
 }
 
-export function isRound1PairValid(letter: string, answer: string): boolean {
-  const normLetter = (letter || "").trim().toUpperCase();
+export function isRound1PairValid(digitOrKey: string | number, answer: string): boolean {
+  if (digitOrKey === null || digitOrKey === undefined) return false;
+  const normKey = digitOrKey.toString().trim();
   const normAnswer = normalizeRound1Input(answer);
-  return Boolean(normLetter && ROUND1_VALID_PAIRS[normLetter] === normAnswer);
+  return Boolean(normKey in ROUND1_VALID_PAIRS && ROUND1_VALID_PAIRS[normKey] === normAnswer);
 }
 
 export const STARTER_CODES: Record<SupportedLanguage, string> = {
