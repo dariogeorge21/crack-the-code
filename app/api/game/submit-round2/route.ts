@@ -2,13 +2,25 @@ import { NextResponse } from "next/server";
 import { getSupabase, isSupabaseConfigured, getLocalTeams, appendLevelSplit, extractLevelSplits } from "@/lib/supabase";
 import { formatDuration } from "@/lib/time";
 import { ROUND_ACCESS_CODES } from "@/constants";
+import { checkCodeHasLoop } from "@/lib/compiler";
+import { SupportedLanguage } from "@/types";
 
 export async function POST(req: Request) {
   try {
-    const { teamCode, accessCode } = await req.json();
+    const { teamCode, accessCode, code, language } = await req.json();
 
     if (!teamCode || typeof teamCode !== "string") {
       return NextResponse.json({ error: "teamCode is required" }, { status: 400 });
+    }
+
+    if (code && typeof code === "string") {
+      const hasLoop = checkCodeHasLoop((language as SupportedLanguage) || "python", code);
+      if (!hasLoop) {
+        return NextResponse.json(
+          { error: "error invalid method" },
+          { status: 400 }
+        );
+      }
     }
 
     const trimmedCode = teamCode.trim();

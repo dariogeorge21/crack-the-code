@@ -10,7 +10,7 @@ import { verifyAdminAuth } from "@/lib/auth/admin";
 
 export async function POST(req: Request) {
   try {
-    const isAuthorized = await verifyAdminAuth();
+    const isAuthorized = await verifyAdminAuth(req);
     if (!isAuthorized) {
       return NextResponse.json(
         { error: "Unauthorized: Admin session required" },

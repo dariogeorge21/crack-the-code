@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { executeCode, checkDiamondPattern, checkAirportSolution } from "@/lib/compiler";
+import { executeCode, checkDiamondPattern, checkAirportSolution, checkCodeHasLoop } from "@/lib/compiler";
 import { SupportedLanguage } from "@/types";
 
 export async function POST(req: Request) {
@@ -24,12 +24,23 @@ export async function POST(req: Request) {
     let isCorrect = false;
     let hasAccessCode = false;
     let accessCode: string | null = null;
+    let error = result.error;
+    let exitCode = result.exitCode;
 
     if (targetRound === 2) {
-      const diamondCheck = checkDiamondPattern(result.output);
-      isCorrect = diamondCheck.isCorrect;
-      hasAccessCode = diamondCheck.hasAccessCode;
-      accessCode = hasAccessCode ? "88" : null;
+      const hasLoop = checkCodeHasLoop(language as SupportedLanguage, code);
+      if (!hasLoop) {
+        isCorrect = false;
+        hasAccessCode = false;
+        accessCode = null;
+        exitCode = 1;
+        error = "error invalid method";
+      } else {
+        const diamondCheck = checkDiamondPattern(result.output);
+        isCorrect = diamondCheck.isCorrect;
+        hasAccessCode = diamondCheck.hasAccessCode;
+        accessCode = hasAccessCode ? "88" : null;
+      }
     } else if (targetRound === 3) {
       const airportCheck = checkAirportSolution(result.output);
       isCorrect = airportCheck.isCorrect;
@@ -40,8 +51,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       output: result.output,
-      error: result.error,
-      exitCode: result.exitCode,
+      error,
+      exitCode,
       time: result.time,
       memory: result.memory,
       source: result.source,

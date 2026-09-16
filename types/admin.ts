@@ -42,3 +42,11 @@ export interface LockoutStatus {
   secondsRemaining: number;
   attemptsRemaining: number;
 }
+
+export interface AdminTeamActionResult {
+  success: boolean;
+  newTeamCode?: string;
+  previousTeamCode?: string;
+  message?: string;
+}
+

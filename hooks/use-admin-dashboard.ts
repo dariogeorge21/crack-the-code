@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { AdminTeamData } from "@/types";
+import { AdminTeamData, AdminTeamActionResult } from "@/types";
 
 export type AdminFilterStatus = "all" | "active" | "level2" | "level3" | "level4" | "completed" | "idle";
 export type AdminSortOption = "number" | "rank" | "time" | "name";
@@ -67,10 +67,12 @@ export function useAdminDashboard() {
     isOpen: boolean;
     action: "reset" | "revert" | null;
     team: AdminTeamData | null;
+    result?: AdminTeamActionResult | null;
   }>({
     isOpen: false,
     action: null,
     team: null,
+    result: null,
   });
   const [isTeamActionExecuting, setIsTeamActionExecuting] = useState(false);
 
@@ -91,10 +93,34 @@ export function useAdminDashboard() {
     return () => clearTimeout(timer);
   }, [toast]);
 
+  // Auth Header & Session Management
+  const getAuthHeaders = useCallback((): Record<string, string> => {
+    if (typeof window === "undefined") return {};
+    const token = sessionStorage.getItem("admin_session_token");
+    if (token) {
+      return {
+        "x-admin-token": token,
+        Authorization: `Bearer ${token}`,
+      };
+    }
+    return {};
+  }, []);
+
+  const clearAuthSession = useCallback(() => {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("admin_auth_token");
+      sessionStorage.removeItem("admin_session_token");
+    }
+    setIsAuthenticated(false);
+  }, []);
+
   // Query server for current lockout & session status on load
   const checkLockoutStatus = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/login");
+      const res = await fetch("/api/admin/login", {
+        credentials: "include",
+        headers: getAuthHeaders(),
+      });
       const data = await res.json();
       if (data.authenticated) {
         setIsAuthenticated(true);
@@ -106,13 +132,14 @@ export function useAdminDashboard() {
         setLockoutSecondsRemaining(data.remainingSeconds);
         setAttemptsRemaining(0);
       } else {
+        clearAuthSession();
         setLockedOut(false);
         setAttemptsRemaining(data.attemptsRemaining ?? 5);
       }
     } catch {
       // Ignore initial poll errors
     }
-  }, []);
+  }, [clearAuthSession, getAuthHeaders]);
 
   // Check lockout & session status on mount
   useEffect(() => {
@@ -143,9 +170,13 @@ export function useAdminDashboard() {
   const fetchTeams = useCallback(async (isManual = false) => {
     try {
       if (isManual) setLoading(true);
-      const res = await fetch("/api/admin/teams");
+      const res = await fetch("/api/admin/teams", {
+        credentials: "include",
+        headers: getAuthHeaders(),
+      });
       if (res.status === 401) {
-        setIsAuthenticated(false);
+        clearAuthSession();
+        showToast("Session expired. Please log in again.", "warning");
         return;
       }
       const data = await res.json();
@@ -161,14 +192,23 @@ export function useAdminDashboard() {
     } finally {
       if (isManual) setLoading(false);
     }
-  }, [showToast]);
+  }, [clearAuthSession, getAuthHeaders, showToast]);
 
   // Initial telemetry fetch when authenticated
   useEffect(() => {
     let ignore = false;
     if (isAuthenticated) {
-      fetch("/api/admin/teams")
-        .then((res) => res.json())
+      fetch("/api/admin/teams", {
+        credentials: "include",
+        headers: getAuthHeaders(),
+      })
+        .then((res) => {
+          if (res.status === 401) {
+            clearAuthSession();
+            return null;
+          }
+          return res.json();
+        })
         .then((data) => {
           if (!ignore && data?.teams) {
             setTeams(data.teams);
@@ -180,7 +220,7 @@ export function useAdminDashboard() {
     return () => {
       ignore = true;
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, clearAuthSession, getAuthHeaders]);
 
 
   // Telemetry auto-polling every 4 seconds
@@ -204,6 +244,7 @@ export function useAdminDashboard() {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ password: password.trim() }),
       });
 
@@ -226,6 +267,9 @@ export function useAdminDashboard() {
       }
 
       if (data.success) {
+        if (data.token) {
+          sessionStorage.setItem("admin_session_token", data.token);
+        }
         sessionStorage.setItem("admin_auth_token", "admin_authorized_asthra_session");
         setIsAuthenticated(true);
         setPassword("");
@@ -242,12 +286,15 @@ export function useAdminDashboard() {
   // Handle Logout
   const handleLogout = async () => {
     try {
-      await fetch("/api/admin/login", { method: "DELETE" });
+      await fetch("/api/admin/login", {
+        method: "DELETE",
+        credentials: "include",
+        headers: getAuthHeaders(),
+      });
     } catch {
       // Ignore network errors on logout
     }
-    sessionStorage.removeItem("admin_auth_token");
-    setIsAuthenticated(false);
+    clearAuthSession();
     setPassword("");
     checkLockoutStatus();
     showToast("Logged out of telemetry session", "info");
@@ -277,9 +324,13 @@ export function useAdminDashboard() {
   const handleGenerateTeams = async () => {
     setIsGenerating(true);
     try {
-      const res = await fetch("/api/admin/generate-teams", { method: "POST" });
+      const res = await fetch("/api/admin/generate-teams", {
+        method: "POST",
+        credentials: "include",
+        headers: getAuthHeaders(),
+      });
       if (res.status === 401) {
-        setIsAuthenticated(false);
+        clearAuthSession();
         showToast("Session expired. Please log in again.", "warning");
         return;
       }
@@ -301,9 +352,13 @@ export function useAdminDashboard() {
   const handleConfirmReset = async () => {
     setIsResetting(true);
     try {
-      const res = await fetch("/api/admin/reset-game", { method: "POST" });
+      const res = await fetch("/api/admin/reset-game", {
+        method: "POST",
+        credentials: "include",
+        headers: getAuthHeaders(),
+      });
       if (res.status === 401) {
-        setIsAuthenticated(false);
+        clearAuthSession();
         showToast("Session expired. Please log in again.", "warning");
         return;
       }
@@ -328,6 +383,7 @@ export function useAdminDashboard() {
       isOpen: true,
       action: "reset",
       team,
+      result: null,
     });
   }, []);
 
@@ -340,12 +396,13 @@ export function useAdminDashboard() {
       isOpen: true,
       action: "revert",
       team,
+      result: null,
     });
   }, [showToast]);
 
   const handleCloseTeamActionModal = useCallback(() => {
     if (isTeamActionExecuting) return;
-    setTeamActionModal({ isOpen: false, action: null, team: null });
+    setTeamActionModal({ isOpen: false, action: null, team: null, result: null });
   }, [isTeamActionExecuting]);
 
   const handleConfirmTeamAction = async () => {
@@ -362,7 +419,11 @@ export function useAdminDashboard() {
 
       const res = await fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
         body: JSON.stringify({
           teamId: team.id,
           teamNumber: team.team_number,
@@ -371,22 +432,39 @@ export function useAdminDashboard() {
       });
 
       if (res.status === 401) {
-        setIsAuthenticated(false);
+        clearAuthSession();
         showToast("Session expired. Please log in again.", "warning");
-        setTeamActionModal({ isOpen: false, action: null, team: null });
+        setTeamActionModal({ isOpen: false, action: null, team: null, result: null });
         return;
       }
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setTeamActionModal({ isOpen: false, action: null, team: null });
-        showToast(
-          data.message ||
-            (action === "reset"
-              ? `${team.team_name} reset to Level 1`
-              : `${team.team_name} level reverted`),
-          "success"
-        );
+        if (action === "reset" && data.newTeamCode) {
+          // Keep modal open in success state with new fresh code displayed for easy copy
+          setTeamActionModal((prev) => ({
+            ...prev,
+            result: {
+              success: true,
+              newTeamCode: data.newTeamCode,
+              previousTeamCode: data.previousTeamCode,
+              message: data.message,
+            },
+          }));
+          showToast(
+            `Team ${team.team_name} reset to Level 1! New Access Code: ${data.newTeamCode}`,
+            "success"
+          );
+        } else {
+          setTeamActionModal({ isOpen: false, action: null, team: null, result: null });
+          showToast(
+            data.message ||
+              (action === "reset"
+                ? `${team.team_name} reset to Level 1`
+                : `${team.team_name} level reverted`),
+            "success"
+          );
+        }
         fetchTeams(false);
       } else {
         showToast(data.error || "Team action failed", "error");

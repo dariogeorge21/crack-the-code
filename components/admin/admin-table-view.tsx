@@ -9,6 +9,7 @@ import {
   Eye,
   EyeSlash,
   CheckCircle,
+  ArrowCounterClockwise,
 } from "@phosphor-icons/react";
 import { AdminTeamData } from "@/types";
 import { getLiveDuration } from "@/lib/time";
@@ -73,7 +74,7 @@ export function AdminTableView({
               <th className="py-3 px-4 font-semibold">Current Stage</th>
               <th className="py-3 px-4 font-semibold">Elapsed Time</th>
               <th className="py-3 px-4 font-semibold">Master Key Progress</th>
-              <th className="py-3 px-4 text-right font-semibold">Inspect</th>
+              <th className="py-3 px-4 text-right font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-800/60">
@@ -266,23 +267,39 @@ export function AdminTableView({
                       )}
                     </td>
 
-                    {/* Expand / Inspect Action */}
+                    {/* Expand / Inspect & Reset Actions */}
                     <td className="py-3 px-4 text-right whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleExpandedTeam(t.id);
-                        }}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-800/70 hover:bg-zinc-700/80 text-zinc-300 hover:text-white text-[11px] font-medium transition-colors cursor-pointer"
-                      >
-                        <span>{isExpanded ? "Hide" : "Details"}</span>
-                        {isExpanded ? (
-                          <CaretUp weight="bold" className="size-3" />
-                        ) : (
-                          <CaretDown weight="bold" className="size-3" />
+                      <div className="inline-flex items-center justify-end gap-2">
+                        {onResetTeam && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onResetTeam(t);
+                            }}
+                            title={`Reset ${t.team_name} progress & generate fresh code`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 hover:border-red-500 text-red-400 hover:text-red-200 text-[11px] font-semibold transition-colors cursor-pointer"
+                          >
+                            <ArrowCounterClockwise weight="bold" className="size-3" />
+                            <span>Reset</span>
+                          </button>
                         )}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleExpandedTeam(t.id);
+                          }}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-800/70 hover:bg-zinc-700/80 text-zinc-300 hover:text-white text-[11px] font-medium transition-colors cursor-pointer"
+                        >
+                          <span>{isExpanded ? "Hide" : "Details"}</span>
+                          {isExpanded ? (
+                            <CaretUp weight="bold" className="size-3" />
+                          ) : (
+                            <CaretDown weight="bold" className="size-3" />
+                          )}
+                        </button>
+                      </div>
                     </td>
                   </tr>
 

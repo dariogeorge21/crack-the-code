@@ -1,3 +1,5 @@
+import { SupportedLanguage } from "@/types";
+
 /**
  * Validates whether program output satisfies the Diamond Star Pattern challenge (Round 2)
  */
@@ -112,3 +114,69 @@ export function checkDiamondPattern(output: string): {
 
   return { isCorrect: true, hasAccessCode: true };
 }
+
+/**
+ * Strips comments and string literals from source code to prevent
+ * false positives where loop keywords are embedded in comments or string literals.
+ */
+export function stripCommentsAndStrings(code: string, language: SupportedLanguage): string {
+  if (!code || typeof code !== "string") return "";
+
+  const normLang = (language || "python").toLowerCase() as SupportedLanguage;
+
+  if (normLang === "python") {
+    // 1. Python triple-quoted strings ("""...""" or '''...''')
+    let clean = code.replace(/"""[\s\S]*?"""/g, '""');
+    clean = clean.replace(/'''[\s\S]*?'''/g, "''");
+    // 2. Python single/double quoted strings
+    clean = clean.replace(/"(?:\\.|[^"\\])*"/g, '""');
+    clean = clean.replace(/'(?:\\.|[^'\\])*'/g, "''");
+    // 3. Python line comments (# ...)
+    clean = clean.replace(/#[^\r\n]*/g, " ");
+    return clean;
+  } else {
+    // C, C++, Java
+    // 1. String literals ("...")
+    let clean = code.replace(/"(?:\\.|[^"\\])*"/g, '""');
+    // 2. Character literals ('...')
+    clean = clean.replace(/'(?:\\.|[^'\\])*'/g, "''");
+    // 3. Block comments (/* ... */)
+    clean = clean.replace(/\/\*[\s\S]*?\*\//g, " ");
+    // 4. Line comments (// ...)
+    clean = clean.replace(/\/\/[^\r\n]*/g, " ");
+    return clean;
+  }
+}
+
+/**
+ * Checks whether the submitted code contains at least one genuine loop syntax.
+ * Supported languages: python, c, cpp, java.
+ *
+ * Returns true if at least one loop construct is found in actual executable code,
+ * false otherwise.
+ */
+export function checkCodeHasLoop(language: SupportedLanguage, code: string): boolean {
+  if (!code || typeof code !== "string") return false;
+
+  const clean = stripCommentsAndStrings(code, language);
+  const normLang = (language || "python").toLowerCase() as SupportedLanguage;
+
+  if (normLang === "python") {
+    // Python reserved loop keywords:
+    // 'for' (e.g. for i in range(...), [x for x in ...])
+    // 'while' (e.g. while condition:, while True:)
+    const hasFor = /\bfor\b/.test(clean);
+    const hasWhile = /\bwhile\b/.test(clean);
+    return hasFor || hasWhile;
+  } else {
+    // C, C++, Java loop syntax:
+    // for (...)
+    // while (...)
+    // do { ... } while (...)
+    const hasFor = /\bfor\s*\(/.test(clean);
+    const hasWhile = /\bwhile\s*\(/.test(clean);
+    const hasDoWhile = /\bdo\s*(\{|\b)/.test(clean);
+    return hasFor || hasWhile || hasDoWhile;
+  }
+}
+

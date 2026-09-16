@@ -154,20 +154,42 @@ export const findLocalTeam = (identifier: string | number): Team | undefined => 
   );
 };
 
-export const resetLocalTeam = (identifier: string | number): Team | null => {
+export const resetLocalTeam = (
+  identifier: string | number,
+  specificNewCode?: string
+): Team | null => {
   const team = findLocalTeam(identifier);
   if (!team) return null;
 
+  const allTeams = getLocalTeams();
+  const otherTeamCodes = new Set(
+    allTeams
+      .filter((t) => t.id !== team.id && t.team_number !== team.team_number)
+      .map((t) => t.team_code)
+      .filter(Boolean)
+  );
+
+  let newCode = specificNewCode;
+  if (!newCode) {
+    let candidate = "";
+    do {
+      candidate = Math.floor(100 + Math.random() * 900).toString();
+    } while (otherTeamCodes.has(candidate) || candidate.startsWith("RESET") || candidate.startsWith("FLUSH"));
+    newCode = candidate;
+  }
+
   const now = new Date().toISOString();
+  team.team_code = newCode;
   team.current_level = 1;
   team.started_at = null;
   team.round1_answer = null;
+  team.first_digit = null;
+  team.master_code = null;
   team.completed_level1_at = null;
   team.completed_level2_at = null;
   team.completed_level3_at = null;
   team.completed_level4_at = null;
   team.updated_at = now;
-  // Preserves team.team_code, team.master_code, and team.first_digit!
 
   return team;
 };

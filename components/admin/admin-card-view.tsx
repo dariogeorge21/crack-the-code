@@ -8,6 +8,7 @@ import {
   EyeSlash,
   CaretDown,
   CaretUp,
+  ArrowCounterClockwise,
 } from "@phosphor-icons/react";
 import { AdminTeamData } from "@/types";
 import { getLiveDuration } from "@/lib/time";
@@ -222,11 +223,27 @@ export function AdminCardView({
               </div>
             </div>
 
-            {/* Card Footer: Details Toggle */}
+            {/* Card Footer: Actions & Details Toggle */}
             <div className="bg-zinc-950/60 border-t border-zinc-800/60 px-4 py-2 flex items-center justify-between">
-              <span className="text-[10px] text-zinc-500 uppercase">
-                Tier 0{t.current_level}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-zinc-500 uppercase">
+                  Tier 0{t.current_level}
+                </span>
+                {onResetTeam && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onResetTeam(t);
+                    }}
+                    title={`Reset ${t.team_name} progress & generate fresh code`}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 hover:border-red-500 text-red-400 hover:text-red-200 text-[10px] font-semibold transition-colors cursor-pointer"
+                  >
+                    <ArrowCounterClockwise weight="bold" className="size-2.5" />
+                    <span>Reset</span>
+                  </button>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={() => onToggleExpandedTeam(t.id)}
