@@ -170,5 +170,12 @@ export const EVENT_DATA = {
       displayPhone: "+91 98472 56190",
       email: "diya.asthra@college.edu",
     },
+    {
+      name: "Amal Roy",
+      role: "Student Coordinator",
+      phone: "+91 97453 18204",
+      displayPhone: "+91 97453 18204",
+      email: "amal.asthra@college.edu",
+    },
   ] as Coordinator[],
 };

@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   CircleNotch,
 } from "@phosphor-icons/react";
+import confetti from "canvas-confetti";
 import { Team } from "@/types";
 import { SESSION_STORAGE_KEY } from "@/constants";
 import { useMissionTimer, usePreventBack } from "@/hooks";
@@ -52,6 +53,70 @@ export default function Level4Page() {
     totalFormatted?: string | null;
   } | null>(null);
   const [fullMasterCode, setFullMasterCode] = useState<string | null>(null);
+
+  // Party Popper Throw Celebration Effect
+  const triggerPopperThrow = useCallback(() => {
+    if (typeof window === "undefined") return;
+
+    // Cannon 1: Left Popper (thrown inward and upward)
+    confetti({
+      particleCount: 85,
+      angle: 60,
+      spread: 75,
+      origin: { x: 0, y: 0.8 },
+      colors: ["#ff5500", "#10b981", "#38bdf8", "#facc15", "#e11d48", "#ffffff"],
+      zIndex: 9999,
+    });
+
+    // Cannon 2: Right Popper (thrown inward and upward)
+    confetti({
+      particleCount: 85,
+      angle: 120,
+      spread: 75,
+      origin: { x: 1, y: 0.8 },
+      colors: ["#ff5500", "#10b981", "#38bdf8", "#facc15", "#e11d48", "#ffffff"],
+      zIndex: 9999,
+    });
+
+    // Center fountain popper burst
+    confetti({
+      particleCount: 100,
+      spread: 100,
+      origin: { x: 0.5, y: 0.65 },
+      colors: ["#ff5500", "#10b981", "#facc15", "#38bdf8", "#a855f7", "#ffffff"],
+      zIndex: 9999,
+    });
+
+    // Delayed secondary blast for flutter & ribbon effect
+    setTimeout(() => {
+      confetti({
+        particleCount: 65,
+        angle: 70,
+        spread: 85,
+        origin: { x: 0.1, y: 0.75 },
+        colors: ["#ff5500", "#facc15", "#ffffff"],
+        zIndex: 9999,
+      });
+      confetti({
+        particleCount: 65,
+        angle: 110,
+        spread: 85,
+        origin: { x: 0.9, y: 0.75 },
+        colors: ["#10b981", "#38bdf8", "#ffffff"],
+        zIndex: 9999,
+      });
+    }, 280);
+  }, []);
+
+  // Automatically trigger party popper throw effect when victory screen is reached
+  useEffect(() => {
+    if (isFinished) {
+      const timer = setTimeout(() => {
+        triggerPopperThrow();
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isFinished, triggerPopperThrow]);
 
   // Live Continuous Mission Timer
   const elapsedSeconds = useMissionTimer(activeTeam?.started_at);
@@ -239,6 +304,8 @@ export default function Level4Page() {
         if (data.team) {
           setActiveTeam(data.team);
         }
+
+        triggerPopperThrow();
       }
     } catch (err) {
       console.error("Flag submission error:", err);
@@ -385,7 +452,7 @@ export default function Level4Page() {
             {/* Target Site External Action Button */}
             <div className="p-4 bg-black/60 border-2 border-dashed border-[#ff5500]/60 mb-5 text-center flex flex-col items-center justify-center gap-2">
               <span className="text-[11px] text-neutral-400 font-bold uppercase tracking-wider">
-                EXTERNAL RECONNAISSANCE TARGET:
+                EXTERNAL TARGET WEBSITE:
               </span>
               <a
                 href="https://mini-ctf-ashy.vercel.app/"
@@ -485,7 +552,7 @@ export default function Level4Page() {
             <div className="mt-5 pt-3 border-t border-neutral-900 flex items-center justify-between text-[10px] text-neutral-500">
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <span>STATE PROTECTED // ANTI-TAMPER SHIELD ACTIVE</span>
+                <span>STATE PROTECTED </span>
               </div>
               <span>TIER 04 VAULT</span>
             </div>
@@ -496,16 +563,26 @@ export default function Level4Page() {
           /* ========================================================================= */
           <div className="relative w-full max-w-2xl bg-[#09090e] border-2 border-emerald-400 shadow-[10px_10px_0px_0px_#ffffff] p-6 sm:p-8 text-center animate-in zoom-in-95 duration-300 space-y-6">
             {/* Top Celebration Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-800 gap-2 flex-wrap">
               <div className="flex items-center gap-2">
                 <Sparkle weight="fill" className="size-4 text-emerald-400 animate-spin" />
                 <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400">
                   [CENTRAL COMMAND // MISSION COMPLETE]
                 </span>
               </div>
-              <span className="px-2.5 py-0.5 bg-purple-950 border border-purple-500/60 text-purple-300 font-bold text-[10px] tracking-wider uppercase">
-                COMPETITION LOCKED
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={triggerPopperThrow}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-neutral-900 hover:bg-[#ff5500] text-neutral-200 hover:text-black border border-neutral-700 hover:border-white text-[10px] font-bold uppercase tracking-wider transition-all shadow-[2px_2px_0px_0px_rgba(255,85,0,0.3)] active:translate-y-0.5 cursor-pointer"
+                  title="Throw celebration poppers again"
+                >
+                  <span>🎉 POP CONFETTI</span>
+                </button>
+                <span className="px-2.5 py-0.5 bg-purple-950 border border-purple-500/60 text-purple-300 font-bold text-[10px] tracking-wider uppercase">
+                  COMPETITION LOCKED
+                </span>
+              </div>
             </div>
 
             {/* Victory Badge */}
@@ -514,14 +591,18 @@ export default function Level4Page() {
               <span>FINAL LOCK CLEARED // SYSTEM OVERRIDE COMPLETE</span>
             </div>
 
-            {/* Prominent Position / Rank Announcement */}
-            <div className="p-6 bg-black/70 border-2 border-white/20 relative overflow-hidden space-y-2">
+            {/* Prominent Position / Rank Announcement (Clickable for Celebration Popper) */}
+            <div
+              onClick={triggerPopperThrow}
+              className="p-6 bg-black/70 border-2 border-white/20 hover:border-emerald-400/80 relative overflow-hidden space-y-2 cursor-pointer transition-all group select-none shadow-[4px_4px_0px_0px_rgba(16,185,129,0.2)]"
+              title="Click to throw celebration poppers!"
+            >
               <div className="text-[11px] uppercase tracking-widest text-neutral-400 font-bold">
                 OFFICIAL COMPETITION STANDING:
               </div>
               <div className="flex items-center justify-center gap-3 my-1">
-                <Trophy weight="fill" className="size-9 sm:size-11 text-amber-400 animate-bounce" />
-                <div className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase font-mono">
+                <Trophy weight="fill" className="size-9 sm:size-11 text-amber-400 animate-bounce group-hover:scale-110 transition-transform" />
+                <div className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase font-mono group-hover:text-emerald-300 transition-colors">
                   {finishRank !== null ? (
                     <>YOU ARE AT POSITION #{finishRank}</>
                   ) : (
@@ -531,6 +612,9 @@ export default function Level4Page() {
               </div>
               <div className="text-xs text-neutral-300 font-mono">
                 Team: <strong className="text-white">{activeTeam.team_name}</strong> (Code: {activeTeam.team_code})
+              </div>
+              <div className="text-[10px] text-neutral-500 group-hover:text-amber-400 transition-colors uppercase font-bold tracking-wider pt-1">
+                🎉 [CLICK ANYWHERE HERE TO THROW CELEBRATION POPPERS]
               </div>
             </div>
 

@@ -19,9 +19,9 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ onOpenIdeasModal, onStartGame }: HeroSectionProps = {}) {
-  const scrollToRounds = (e: React.MouseEvent) => {
+  const scrollToRules = (e: React.MouseEvent) => {
     e.preventDefault();
-    const element = document.getElementById("rounds");
+    const element = document.getElementById("rules");
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
     }
@@ -36,11 +36,16 @@ export function HeroSection({ onOpenIdeasModal, onStartGame }: HeroSectionProps 
       <div className="absolute top-20 right-6 text-neutral-600 font-mono text-xs select-none pointer-events-none hidden md:block">
         VAULT_STATUS: ACTIVE +
       </div>
-      <div className="absolute bottom-16 left-6 text-neutral-600 font-mono text-xs select-none pointer-events-none hidden md:block">
-        + COORD [9.9312° N, 76.2673° E]
-      </div>
-      <div className="absolute bottom-16 right-6 text-[#ff5500]/40 font-mono text-xs select-none pointer-events-none hidden md:block">
-        ENC_256 // LEVEL_01 READY +
+
+      <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-6 lg:px-12 pb-3 pointer-events-none hidden md:block">
+        <div className="max-w-7xl mx-auto flex items-end justify-between text-xs font-mono">
+          <div className="text-neutral-600 select-none">
+            + COORD [9.9312° N, 76.2673° E]
+          </div>
+          <div className="text-[#ff5500]/40 select-none">
+            ENC_256 // LEVEL_01 READY +
+          </div>
+        </div>
       </div>
 
       {/* Ambient background glow */}
@@ -106,7 +111,7 @@ export function HeroSection({ onOpenIdeasModal, onStartGame }: HeroSectionProps 
             &ldquo;{EVENT_DATA.event.hero_message}&rdquo;
           </p>
           <p className="mt-3 text-xs sm:text-sm text-neutral-400 font-mono max-w-xl mx-auto leading-relaxed">
-            4 sequential physical, cryptographic, algorithmic and multi-tier locks.
+            4 sequential physical,algorithmic and multi-tier locks.
             Solve the clues, dismantle the firewalls, and crack the final vault.
           </p>
         </div>
@@ -127,7 +132,7 @@ export function HeroSection({ onOpenIdeasModal, onStartGame }: HeroSectionProps 
           <div className="p-3 bg-neutral-950/80 border border-neutral-800 flex items-center justify-between opacity-80 hover:opacity-100 hover:border-neutral-500 transition-all">
             <div className="text-left font-mono">
               <span className="text-[10px] text-neutral-500 block">STAGE 02</span>
-              <span className="text-xs font-bold text-neutral-300">L2 DSA/CODE</span>
+              <span className="text-xs font-bold text-neutral-300">L2 CODE</span>
             </div>
             <div className="flex items-center gap-1 text-neutral-500">
               <Lock weight="bold" className="size-4" />
@@ -138,7 +143,7 @@ export function HeroSection({ onOpenIdeasModal, onStartGame }: HeroSectionProps 
           <div className="p-3 bg-neutral-950/80 border border-neutral-800 flex items-center justify-between opacity-80 hover:opacity-100 hover:border-neutral-500 transition-all">
             <div className="text-left font-mono">
               <span className="text-[10px] text-neutral-500 block">STAGE 03</span>
-              <span className="text-xs font-bold text-neutral-300">L3 DSA/CODE</span>
+              <span className="text-xs font-bold text-neutral-300">L3 DSA</span>
             </div>
             <div className="flex items-center gap-1 text-neutral-500">
               <Lock weight="bold" className="size-4" />
@@ -159,50 +164,30 @@ export function HeroSection({ onOpenIdeasModal, onStartGame }: HeroSectionProps 
         </div>
 
         {/* CTA Button Group */}
-        <div className="mt-10 flex flex-col sm:flex-row items-center gap-4 z-20">
-          <a
-            href="#rounds"
-            onClick={scrollToRounds}
-            className="w-full sm:w-auto px-8 py-4 bg-[#ff5500] hover:bg-white text-black font-black text-sm tracking-widest uppercase transition-all shadow-[4px_4px_0px_0px_#ffffff] active:translate-x-0.5 active:translate-y-0.5 flex items-center justify-center gap-3 cursor-pointer"
-          >
-            <span>EXPLORE 4 ROUNDS</span>
-            <ArrowDown weight="bold" className="size-4 animate-bounce" />
-          </a>
-
+        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 z-20">
           <button
             type="button"
             onClick={() => {
               if (onStartGame) {
                 onStartGame();
-              } else {
-                scrollToRounds({ preventDefault: () => {} } as React.MouseEvent);
               }
             }}
-            className="w-full sm:w-auto px-8 py-4 bg-neutral-900 border border-neutral-700 hover:border-[#ff5500] text-white hover:text-[#ff5500] font-bold text-sm tracking-widest uppercase transition-all shadow-[4px_4px_0px_0px_#ff5500] flex items-center justify-center gap-2 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+            className="w-full sm:w-auto px-10 py-4 bg-[#ff5500] hover:bg-white text-black font-black text-sm tracking-widest uppercase transition-all shadow-[4px_4px_0px_0px_#ffffff] flex items-center justify-center gap-3 cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
           >
-            <Play weight="bold" className="size-4 text-[#ff5500]" />
+            <Play weight="bold" className="size-4" />
             <span>START GAME</span>
           </button>
         </div>
       </div>
 
       {/* Bottom Live Marquee Ribbon */}
-      <div className="relative max-w-7xl mx-auto w-full pt-6 border-t border-neutral-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-neutral-400 z-10">
-        <div className="flex items-center gap-3">
-          <span className="px-2 py-0.5 bg-[#ff5500] text-black font-bold text-[10px] tracking-wider uppercase">
-            STATUS
-          </span>
-          <span className="text-white text-xs tracking-wider">
-            REGISTRATION OPEN // LIMITED SLOTS
-          </span>
-        </div>
-
+      <div className="relative max-w-7xl mx-auto w-full pt-6 border-t border-neutral-800/80 flex items-center justify-center sm:justify-end gap-4 font-mono text-xs text-neutral-400 z-10">
         <a
-          href="#rounds"
-          onClick={scrollToRounds}
+          href="#rules"
+          onClick={scrollToRules}
           className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors cursor-pointer group"
         >
-          <span className="text-[11px] tracking-widest uppercase">SCROLL DOWN TO DISCOVER ROUNDS</span>
+          <span className="text-[11px] tracking-widest uppercase">SCROLL DOWN FOR RULES &amp; GUIDELINES</span>
           <div className="w-6 h-6 border border-neutral-700 flex items-center justify-center group-hover:border-[#ff5500] group-hover:text-[#ff5500] transition-colors">
             <ArrowDown weight="bold" className="size-3" />
           </div>

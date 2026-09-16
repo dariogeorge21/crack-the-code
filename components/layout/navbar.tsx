@@ -40,20 +40,12 @@ export function Navbar({
   const handleStartGame = () => {
     if (onStartGame) {
       onStartGame();
-      return;
-    }
-    const element = document.getElementById("rounds");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    } else {
-      window.location.href = "#rounds";
     }
   };
 
   const navLinks = [
-    { label: "[01] ROUNDS", href: "#rounds" },
-    { label: "[02] RULES", href: "#rules" },
-    { label: "[03] CO-ORDINATORS", href: "#coordinators" },
+    { label: "[01] RULES", href: "#rules" },
+    { label: "[02] CO-ORDINATORS", href: "#coordinators" },
   ];
 
   return (
@@ -64,11 +56,11 @@ export function Navbar({
           : "bg-transparent border-b border-white/5"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between relative">
         {/* Brand */}
         <a
           href="#"
-          className="flex items-center gap-3 group select-none"
+          className="flex items-center gap-3 group select-none relative z-10"
         >
           <div className="w-8 h-8 bg-[#ff5500] flex items-center justify-center text-black font-black text-xs group-hover:bg-white transition-colors">
             <LockOpen weight="bold" className="size-4" />
@@ -89,12 +81,12 @@ export function Navbar({
         </a>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-mono">
+        <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center justify-center gap-8 text-xs font-mono z-10">
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="text-neutral-400 hover:text-white hover:border-b-2 hover:border-[#ff5500] py-1 tracking-wider transition-colors"
+              className="text-neutral-400 hover:text-white hover:border-b-2 hover:border-[#ff5500] py-1 tracking-wider transition-colors text-center"
             >
               {link.label}
             </a>
@@ -102,7 +94,7 @@ export function Navbar({
         </nav>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative z-10">
           {/* Master Key HUD in Header */}
           {activeTeamMasterCode && (
             <MasterKeyHud
