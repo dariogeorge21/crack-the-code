@@ -99,6 +99,8 @@ export function useLevel2Compiler({
               body: JSON.stringify({
                 teamCode: activeTeam.team_code,
                 accessCode: execResult.accessCode || "88",
+                code: codeToRun,
+                language,
               }),
             });
             const submitData = await submitRes.json();
@@ -148,6 +150,7 @@ export function useLevel2Compiler({
       setIsUnlockModalOpen(true);
       return;
     }
+    const codeToRun = codeMap[language] ?? STARTER_CODES[language];
     try {
       const submitRes = await fetch("/api/game/submit-round2", {
         method: "POST",
@@ -155,6 +158,8 @@ export function useLevel2Compiler({
         body: JSON.stringify({
           teamCode: activeTeam.team_code,
           accessCode: "88",
+          code: codeToRun,
+          language,
         }),
       });
       const submitData = await submitRes.json();
