@@ -14,9 +14,9 @@ function generateUnique3DigitCodes(count: number): string[] {
   return Array.from(codes);
 }
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
-    const isAuthorized = await verifyAdminAuth();
+    const isAuthorized = await verifyAdminAuth(req);
     if (!isAuthorized) {
       return NextResponse.json(
         { error: "Unauthorized: Admin session required" },

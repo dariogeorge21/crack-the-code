@@ -5,9 +5,9 @@ import { formatDuration } from "@/lib/time";
 import { computeMaskedMasterCode } from "@/lib/code-masking";
 import { verifyAdminAuth } from "@/lib/auth/admin";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const isAuthorized = await verifyAdminAuth();
+    const isAuthorized = await verifyAdminAuth(req);
     if (!isAuthorized) {
       return NextResponse.json(
         { error: "Unauthorized: Admin session required" },

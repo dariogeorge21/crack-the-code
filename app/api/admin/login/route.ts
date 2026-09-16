@@ -47,7 +47,7 @@ function getRateLimitState(ip: string): AdminRateLimitState {
 
 // GET: Query current session auth status & IP lockout status
 export async function GET(req: Request) {
-  const isAuthenticated = await verifyAdminAuth();
+  const isAuthenticated = await verifyAdminAuth(req);
   if (isAuthenticated) {
     return NextResponse.json({
       authenticated: true,
@@ -122,13 +122,14 @@ export async function POST(req: Request) {
       const response = NextResponse.json({
         success: true,
         role: "admin",
+        token: sessionToken,
       });
 
       // Set tamper-proof HttpOnly session cookie
       response.cookies.set(
         ADMIN_COOKIE_NAME,
         sessionToken,
-        getAdminCookieOptions()
+        getAdminCookieOptions(undefined, req)
       );
 
       return response;
@@ -174,10 +175,10 @@ export async function POST(req: Request) {
 }
 
 // DELETE: Logout by clearing the admin session cookie
-export async function DELETE() {
+export async function DELETE(req: Request) {
   const response = NextResponse.json({ success: true, message: "Logged out" });
   response.cookies.set(ADMIN_COOKIE_NAME, "", {
-    ...getAdminCookieOptions(0),
+    ...getAdminCookieOptions(0, req),
     maxAge: 0,
   });
   return response;
