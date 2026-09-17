@@ -7,7 +7,6 @@ import {
   TerminalWindow,
   ListNumbers,
   Info,
-  WarningCircle,
 } from "@phosphor-icons/react";
 
 const EVENT_LOG = [
@@ -37,7 +36,7 @@ interface AirportProblemPaneProps {
 }
 
 export function AirportProblemPane({ round = 3 }: AirportProblemPaneProps = {}) {
-  const [activeTab, setActiveTab] = useState<"desc" | "log" | "rules">("desc");
+  const [activeTab, setActiveTab] = useState<"desc" | "log" | "formula">("desc");
 
   return (
     <div className="flex flex-col h-full bg-[#0a0a0d] border border-neutral-800 text-neutral-300 font-sans select-text overflow-hidden">
@@ -70,15 +69,15 @@ export function AirportProblemPane({ round = 3 }: AirportProblemPaneProps = {}) 
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab("rules")}
+            onClick={() => setActiveTab("formula")}
             className={`px-3 py-2 text-xs font-mono font-bold tracking-wider uppercase transition-colors flex items-center gap-1.5 border-b-2 ${
-              activeTab === "rules"
+              activeTab === "formula"
                 ? "border-[#ff5500] text-[#ff5500] bg-neutral-900/60"
                 : "border-transparent text-neutral-400 hover:text-neutral-200"
             }`}
           >
-            <Info weight="bold" className="size-3.5" />
-            <span>Rules & Specs</span>
+            <ShieldCheck weight="bold" className="size-3.5" />
+            <span>Access Code Formula</span>
           </button>
         </div>
 
@@ -137,13 +136,68 @@ export function AirportProblemPane({ round = 3 }: AirportProblemPaneProps = {}) 
                 <div>2. The passenger checks in at the airline counter.</div>
                 <div>3. After check-in, the passenger joins the waiting area for security screening.</div>
                 <div>4. Security officers always screen the passenger who has been waiting the longest (FIFO).</div>
-                <div>5. At various times, Airport Control requests the name of the passenger who will be screened next.</div>
+                <div>5. The passenger who is screened will be removed from the line.</div>
               </div>
               <p className="text-neutral-300 mt-3 text-xs leading-relaxed">
                 Your task is to simulate the events exactly as they occur in chronological order and determine the final <strong>Access Code</strong> to clear Round {round}.
               </p>
+             
             </div>
 
+            {/* Quick Navigation Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setActiveTab("log")}
+                className="flex items-center justify-between p-3 bg-neutral-900/80 hover:bg-neutral-800 border border-neutral-800 hover:border-[#ff5500]/50 transition-all text-left group cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 bg-[#ff5500]/10 border border-[#ff5500]/30 text-[#ff5500]">
+                    <ListNumbers weight="bold" className="size-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-mono font-bold text-white group-hover:text-[#ff5500] transition-colors">
+                      Event Log (19 Steps)
+                    </div>
+                    <div className="text-[11px] text-neutral-400 font-mono">
+                      Operations, rules &amp; simulation log
+                    </div>
+                  </div>
+                </div>
+                <span className="text-xs font-mono text-neutral-500 group-hover:text-white transition-colors pr-1">
+                  →
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("formula")}
+                className="flex items-center justify-between p-3 bg-neutral-900/80 hover:bg-neutral-800 border border-neutral-800 hover:border-emerald-500/50 transition-all text-left group cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                    <ShieldCheck weight="bold" className="size-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-mono font-bold text-white group-hover:text-emerald-400 transition-colors">
+                      Access Code Formula
+                    </div>
+                    <div className="text-[11px] text-neutral-400 font-mono">
+                      Instructions to compute 2-digit key
+                    </div>
+                  </div>
+                </div>
+                <span className="text-xs font-mono text-neutral-500 group-hover:text-white transition-colors pr-1">
+                  →
+                </span>
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Tab 2: Full 19 Event Log Table */}
+        {activeTab === "log" && (
+          <div className="space-y-4">
             {/* Core Rules Quick Summary */}
             <div>
               <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-400 mb-2">
@@ -165,48 +219,19 @@ export function AirportProblemPane({ round = 3 }: AirportProblemPaneProps = {}) 
                 <div className="bg-neutral-900/90 border border-neutral-800 p-2.5">
                   <span className="text-amber-400 font-bold">SCREEN</span>
                   <p className="text-neutral-400 text-[11px] mt-1">
-                    Removes the passenger who has waited longest (pop from queue front).
+                    Prints the person who is in the front of the line.
                   </p>
                 </div>
                 <div className="bg-neutral-900/90 border border-neutral-800 p-2.5">
                   <span className="text-[#ff5500] font-bold">NEXT</span>
                   <p className="text-neutral-400 text-[11px] mt-1">
-                    Airport Control requests who will be screened next (peek front passenger).
+                    The person who is screened will be removed from queue.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Access Code Formula */}
-            <div className="bg-neutral-950 border-2 border-[#ff5500]/60 p-4 relative">
-              <div className="flex items-center gap-2 text-[#ff5500] font-mono font-bold text-xs uppercase mb-1">
-                <ShieldCheck weight="bold" className="size-4" />
-                <span>Access Code Formula</span>
-              </div>
-              <p className="text-xs text-neutral-300">
-                After processing all 19 events, compute the 2-digit Access Code:
-              </p>
-              <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono text-xs">
-                <div className="p-2 bg-neutral-900 border border-neutral-800">
-                  <div className="text-neutral-400 text-[10px]">DIGIT 1 (TENS):</div>
-                  <div className="text-white font-bold">Total passengers screened</div>
-                </div>
-                <div className="p-2 bg-neutral-900 border border-neutral-800">
-                  <div className="text-neutral-400 text-[10px]">DIGIT 2 (UNITS):</div>
-                  <div className="text-white font-bold">Passengers still waiting in line</div>
-                </div>
-              </div>
-              <div className="mt-3 text-[11px] text-[#ff5500] font-mono font-bold">
-                Output Format: Whenever NEXT appears, print the passenger name. Finally, print the 2-digit Access Code.
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Tab 2: Full 19 Event Log Table */}
-        {activeTab === "log" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between pt-2 border-t border-neutral-800/80">
               <div>
                 <h3 className="text-sm font-mono font-bold text-white uppercase">
                   Chronological Event Log (Steps 1 - 19)
@@ -255,44 +280,76 @@ export function AirportProblemPane({ round = 3 }: AirportProblemPaneProps = {}) 
           </div>
         )}
 
-        {/* Tab 3: Rules & Hints */}
-        {activeTab === "rules" && (
-          <div className="space-y-4 font-mono text-xs">
-            <div className="p-4 bg-neutral-900/80 border border-neutral-800">
-              <h3 className="font-bold text-[#ff5500] uppercase mb-2 flex items-center gap-1.5">
-                <WarningCircle weight="bold" className="size-4" />
-                <span>Simulation Rules & Queue Mechanics</span>
-              </h3>
-              <ul className="space-y-2 text-neutral-300 list-disc list-inside text-xs leading-relaxed">
-                <li>
-                  <strong>FIFO Discipline:</strong> The security waiting line is strictly First-In, First-Out.
-                  The passenger who calls <code>CHECKIN</code> earliest is at the front of the queue.
-                </li>
-                <li>
-                  <strong>ENTER vs CHECKIN:</strong> When a passenger <code>ENTER</code>s, they are roaming the
-                  terminal. They DO NOT join the screening queue until they <code>CHECKIN</code>.
-                </li>
-                <li>
-                  <strong>SCREEN:</strong> Removes the front passenger from the waiting queue and increments the screened passenger counter.
-                </li>
-                <li>
-                  <strong>NEXT:</strong> Looks at the front of the queue and prints their name. Does NOT remove them from the line.
-                </li>
-                <li>
-                  <strong>Access Code Calculation:</strong>
-                  <br />
-                  First digit = Total number of passengers screened
-                  <br />
-                  Second digit = Number of passengers still waiting in the security line
-                </li>
-              </ul>
+        {/* Tab 3: Access Code Formula */}
+        {activeTab === "formula" && (
+          <div className="space-y-4">
+            <div className="bg-neutral-950 border-2 border-[#ff5500]/60 p-4 relative">
+              <div className="flex items-center gap-2 text-[#ff5500] font-mono font-bold text-xs uppercase mb-1">
+                <ShieldCheck weight="bold" className="size-4" />
+                <span>Access Code Formula</span>
+              </div>
+              <p className="text-xs text-neutral-300">
+                After processing all 19 events, compute the 2-digit Access Code:
+              </p>
+              <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono text-xs">
+                <div className="p-2 bg-neutral-900 border border-neutral-800">
+                  <div className="text-neutral-400 text-[10px]">DIGIT 1 (TENS):</div>
+                  <div className="text-white font-bold">Total passengers screened</div>
+                </div>
+                <div className="p-2 bg-neutral-900 border border-neutral-800">
+                  <div className="text-neutral-400 text-[10px]">DIGIT 2 (UNITS):</div>
+                  <div className="text-white font-bold">Passengers still waiting in line</div>
+                </div>
+              </div>
+              <div className="mt-3 text-[11px] text-[#ff5500] font-mono font-bold">
+                Output Format: Print the name of passenger who are screened and then print access code at the end .
+              </div>
             </div>
 
-            <div className="p-4 bg-black border border-neutral-800">
-              <h4 className="text-neutral-400 font-bold uppercase mb-2">Algorithm Approach</h4>
-              <p className="text-neutral-400 text-xs leading-relaxed">
-                Use a standard Queue or List structure (e.g. <code>list</code> or <code>collections.deque</code> in Python, or an array with head/tail pointers in C).
+            {/* Expected Outcome (Dummy Example) */}
+            <div className="bg-[#111116] border border-neutral-800 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-white uppercase tracking-wider">
+                  <TerminalWindow weight="bold" className="size-4 text-[#ff5500]" />
+                  <span>Expected Outcome (Example Format)</span>
+                </div>
+                <span className="px-2 py-0.5 text-[10px] font-mono bg-neutral-800 text-neutral-400 border border-neutral-700">
+                  Dummy Example
+                </span>
+              </div>
+
+              <p className="text-xs text-neutral-400 font-sans leading-relaxed">
+                Your program should print each screened passenger&apos;s name on a new line, followed by the computed 2-digit Access Code at the end:
               </p>
+
+              <div className="p-3.5 bg-black border border-neutral-800 font-mono text-xs sm:text-sm">
+                <div className="text-neutral-500 text-[10px] mb-2 select-none uppercase tracking-wider font-bold">
+                  Terminal Output Example
+                </div>
+                <div className="space-y-1 text-emerald-400 font-mono">
+                  <div className="flex items-center justify-between">
+                    <span>Alice</span>
+                    <span className="text-neutral-500 text-[11px] font-normal select-none">← Passenger screened</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Bob</span>
+                    <span className="text-neutral-500 text-[11px] font-normal select-none">← Passenger screened</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Charlie</span>
+                    <span className="text-neutral-500 text-[11px] font-normal select-none">← Passenger screened</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-1 border-t border-neutral-800/80 mt-1">
+                    <span className="text-[#ff5500] font-bold text-sm">32</span>
+                    <span className="text-neutral-500 text-[11px] font-normal select-none">← Final 2-digit Access Code</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-[11px] text-neutral-500 font-mono flex items-center gap-1.5">
+                <Info weight="bold" className="size-3.5 text-neutral-400 shrink-0" />
+                <span>Note: The names and numbers above are dummy placeholders to illustrate the output structure.</span>
+              </div>
             </div>
           </div>
         )}
