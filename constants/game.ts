@@ -12,16 +12,16 @@ export const ROUND_ACCESS_CODES = {
 } as const;
 
 export const ROUND1_VALID_PAIRS: Record<string, string> = {
-  "0": "POINTER",
-  "1": "TREE",
-  "2": "ROOT",
-  "3": "PRIORITY QUEUE",
-  "4": "SORTING",
-  "5": "BUBBLE SORT",
-  "6": "SELECTION SORT",
-  "7": "INSERTION SORT",
-  "8": "LINEAR SEARCH",
-  "9": "HASHING",
+  "0": "HARD DISK",
+  "1": "ALU",
+  "2": "CPU",
+  "3": "RAM",
+  "4": "CACHE MEMORY",
+  "5": "SMPS",
+  "6": "SSD",
+  "7": "CONTROL UNIT",
+  "8": "MOTHER BOARD",
+  "9": "ROM",
 } as const;
 
 export function normalizeRound1Input(val: string): string {
@@ -32,7 +32,14 @@ export function isRound1PairValid(digitOrKey: string | number, answer: string): 
   if (digitOrKey === null || digitOrKey === undefined) return false;
   const normKey = digitOrKey.toString().trim();
   const normAnswer = normalizeRound1Input(answer);
-  return Boolean(normKey in ROUND1_VALID_PAIRS && ROUND1_VALID_PAIRS[normKey] === normAnswer);
+  if (!(normKey in ROUND1_VALID_PAIRS)) return false;
+
+  const expected = ROUND1_VALID_PAIRS[normKey];
+  if (expected === normAnswer) return true;
+
+  // Resilient check stripping spaces/hyphens (e.g. "MOTHERBOARD" matches "MOTHER BOARD")
+  const strip = (s: string) => s.replace(/[\s\-_]/g, "");
+  return strip(expected) === strip(normAnswer);
 }
 
 export const STARTER_CODES: Record<SupportedLanguage, string> = {
